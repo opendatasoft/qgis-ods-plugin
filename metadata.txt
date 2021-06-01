@@ -1,0 +1,9 @@
+[general]
+name=Minimal
+description=Minimal plugin
+about="I'm learnding", said the intern learning about qgis plugin
+version=1.0
+qgisMinimumVersion=3.0
+author=Venceslas Roullier
+email=venceslas.roullier@opendatasoft.com
+repository=URL to the code repository
