@@ -34,6 +34,7 @@ class MinimalPlugin:
 
         import os
         from qgis.core import (QgsVectorLayer, QgsField, QgsFeature, QgsGeometry, QgsPointXY)
+        from qgis.PyQt.QtCore import QVariant
 
         vlayer = QgsVectorLayer("Point", "temporary_futurama_points", "memory")
         provider = vlayer.dataProvider()
@@ -60,3 +61,8 @@ class MinimalPlugin:
         provider.addFeatures([feat])
 
         vlayer.updateExtents()
+
+        features = vlayer.getFeatures()
+        for fet in features:
+            print("F:", fet.id(), fet.attributes(), fet.geometry().asPoint())
+
