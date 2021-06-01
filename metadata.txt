@@ -1,7 +1,7 @@
 [general]
-name=Minimal
-description=Minimal plugin
-about="I'm learnding", said the intern learning about qgis plugin
+name=ODS
+description=ODS plugin
+about=This plugin links ODS to QGIS.
 version=1.0
 qgisMinimumVersion=3.0
 author=Venceslas Roullier
