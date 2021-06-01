@@ -1,8 +1,18 @@
+# -------------------------------------------------------------------------------------------------------------------------------------
+# This file has two functions, each for creating and modifying a layer using the python console of QGIS.
+# Each time, you just have to copy the code under the definition, and voilà.
+# The first function is a way to create a layer using an existing dataset. The current example uses the Festivals du Finistère dataset.
+# The second function is a way to create a layer from scratch, using the memory provider. The current example creates Futurama data.
+# -------------------------------------------------------------------------------------------------------------------------------------
+
+
 def create_layer_from_dataset():
-    path_to_festivals = "/Users/venceslas/Documents/pyqgis_plugin/festivals-du-finistere.geojson"
+    """This script modifies the dataset it uses."""
+
+    #Don't forget to adapt the path to your computer for now
+    path_to_festivals = "/Users/venceslas/qgis-ods-plugin/festivals-du-finistere.geojson"
 
     festival_vlayer = QgsVectorLayer(path_to_festivals, "Festivals du Finistère", "ogr")
-    #Regarder provider "memory" (crée une couche vide, etc)
 
     if not festival_vlayer.isValid():
         print("Layer failed to load!")
@@ -19,6 +29,8 @@ def create_layer_from_dataset():
         iface.mapCanvas().refresh()
 
 def create_layer_with_memory_provider():
+    """The script dataset is temporary, and will be deleted when you quit QGIS."""
+
     vlayer = QgsVectorLayer("Point", "temporary_futurama_points", "memory")
     provider = vlayer.dataProvider()
     provider.addAttributes([QgsField("name", QVariant.String),
