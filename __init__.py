@@ -1,13 +1,13 @@
-#-----------------------------------------------------------
-# Copyright (C) 2015 Martin Dobias
-#-----------------------------------------------------------
+# -----------------------------------------------------------
+# Copyright (C) 2021 Venceslas Roullier/Opendatasoft
+# -----------------------------------------------------------
 # Licensed under the terms of GNU GPL 2
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-#---------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
 from PyQt5.QtWidgets import QAction, QMessageBox
 
@@ -30,11 +30,12 @@ class MinimalPlugin:
         del self.action
 
     def run(self):
-        QMessageBox.information(None, 'Minimal plugin', "When you press the button, you'll get a new Futurama dataset from scratch.")
+        QMessageBox.information(None, 'Minimal plugin',
+                                "When you press the button, you'll get a new Futurama dataset from scratch.")
 
-        import os
-        from qgis.core import (QgsVectorLayer, QgsField, QgsFeature, QgsGeometry, QgsPointXY)
+        from qgis.core import (QgsVectorLayer, QgsField, QgsFeature, QgsGeometry, QgsPointXY, QgsProject)
         from qgis.PyQt.QtCore import QVariant
+        from qgis.gui import QgsMapCanvas
 
         vlayer = QgsVectorLayer("Point", "temporary_futurama_points", "memory")
         provider = vlayer.dataProvider()
@@ -66,3 +67,7 @@ class MinimalPlugin:
         for fet in features:
             print("F:", fet.id(), fet.attributes(), fet.geometry().asPoint())
 
+        QgsProject.instance().addMapLayer(vlayer)
+        canvas = QgsMapCanvas()
+        canvas.setExtent(vlayer.extent())
+        canvas.setLayers([vlayer])
