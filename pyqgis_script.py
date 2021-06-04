@@ -9,7 +9,7 @@
 def create_layer_from_dataset():
     """This script modifies the dataset it uses."""
 
-    #Don't forget to adapt the path to your computer for now
+    # Don't forget to adapt the path to your computer for now
     path_to_festivals = "/Users/venceslas/qgis-ods-plugin/festivals-du-finistere.geojson"
 
     festival_vlayer = QgsVectorLayer(path_to_festivals, "Festivals du Finistère", "ogr")
@@ -20,7 +20,12 @@ def create_layer_from_dataset():
         QgsProject.instance().addMapLayer(festival_vlayer)
 
     feat = QgsFeature(festival_vlayer.fields())
-    feat.setAttributes(["29", "2020-05-27", "CE197", "www.brestivaldelachaussette.com", "Annuelle", "PLOUZANE", "Finist\u00e8re", 29.0,  "BRESTIVAL DE LA CHAUSSETTE", (48.4, -4.6), "2020-05-25", 0.0, 20.0, 21.0, "29280", 5.0, "C'est LE festival de la chaussette : amoureux des pieds bien traités, amis du tricot ou encore givrés du panard, vous y trouverez les dernières nouveautés en matière de chaussette bretonne...", "Chaussettes, what else ?", "29280", "Bretagne","Transdisciplinaire", "1998-01-01", "05 (mai)", "PLOUZANE"])
+    feat.setAttributes(
+        ["29", "2020-05-27", "CE197", "www.brestivaldelachaussette.com", "Annuelle", "PLOUZANE", "Finist\u00e8re", 29.0,
+         "BRESTIVAL DE LA CHAUSSETTE", (48.4, -4.6), "2020-05-25", 0.0, 20.0, 21.0, "29280", 5.0,
+         "C'est LE festival de la chaussette : amoureux des pieds bien traités, amis du tricot ou encore givrés du "
+         "panard, vous y trouverez les dernières nouveautés en matière de chaussette bretonne...",
+         "Chaussettes, what else ?", "29280", "Bretagne", "Transdisciplinaire", "1998-01-01", "05 (mai)", "PLOUZANE"])
     feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(-4.6, 48.4)))
     (res, outFeats) = festival_vlayer.dataProvider().addFeatures([feat])
     if iface.mapCanvas().isCachingEnabled():
@@ -28,16 +33,17 @@ def create_layer_from_dataset():
     else:
         iface.mapCanvas().refresh()
 
+
 def create_layer_with_memory_provider():
     """The script dataset is temporary, and will be deleted when you quit QGIS."""
 
     vlayer = QgsVectorLayer("Point", "temporary_futurama_points", "memory")
     provider = vlayer.dataProvider()
     provider.addAttributes([QgsField("name", QVariant.String),
-                      QgsField("age", QVariant.Int),
-                      QgsField("size", QVariant.Double),
-                      QgsField("is_human", QVariant.Bool),
-                      QgsField("date_of_birth", QVariant.Date)])
+                            QgsField("age", QVariant.Int),
+                            QgsField("size", QVariant.Double),
+                            QgsField("is_human", QVariant.Bool),
+                            QgsField("date_of_birth", QVariant.Date)])
 
     vlayer.updateFields()
 
@@ -56,3 +62,16 @@ def create_layer_with_memory_provider():
     provider.addFeatures([feat])
 
     vlayer.updateExtents()
+
+
+def import_dataset(domain_url, dataset_id):
+    import requests
+    r = requests.get("{}/api/v2/catalog/datasets/{}/records".format(domain_url, dataset_id))
+    return r.json()
+
+
+def import_dataset_list(domain_url):
+    import requests
+    r = requests.get("{}/api/v2/catalog/datasets".format(domain_url))
+    print(r.json())
+    return r.json()
