@@ -66,12 +66,27 @@ def create_layer_with_memory_provider():
 
 def import_dataset(domain_url, dataset_id):
     import requests
-    r = requests.get("{}/api/v2/catalog/datasets/{}/records".format(domain_url, dataset_id))
-    return r.json()
+    first_query = requests.get("{}/api/v2/catalog/datasets/{}/query?limit=100".format(domain_url, dataset_id))
+    json_dataset = first_query.json()
+    total_count = json_dataset['total_count']
+    offset = 100
+    while offset <= total_count:
+        query = requests.get(
+            "{}/api/v2/catalog/datasets/{}/query?limit=100&offset={}".format(domain_url, dataset_id, offset))
+        json_dataset['results'] += query.json()['results']
+        offset += 100
+    return json_dataset
 
 
 def import_dataset_list(domain_url):
     import requests
-    r = requests.get("{}/api/v2/catalog/datasets".format(domain_url))
-    print(r.json())
-    return r.json()
+    first_query = requests.get("{}/api/v2/catalog/query?limit=100".format(domain_url))
+    json_dataset = first_query.json()
+    total_count = json_dataset['total_count']
+    offset = 100
+    while offset <= total_count:
+        query = requests.get(
+            "{}/api/v2/catalog/query?limit=100&offset={}".format(domain_url, offset))
+        json_dataset['results'] += query.json()['results']
+        offset += 100
+    return json_dataset
