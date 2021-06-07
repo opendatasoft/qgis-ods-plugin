@@ -10,7 +10,7 @@
 # ---------------------------------------------------------------------
 
 from PyQt5.QtWidgets import QAction, QMessageBox
-
+from . import pyqgis_script
 
 
 def classFactory(iface):
@@ -48,15 +48,7 @@ class MinimalPlugin:
                               "geo_point_2d": QVariant.String}
         attribute_list = []
 
-        # REMOVE DEF AFTER IMPORT PROBLEM SOLVED
-        # function imports don't seem to work, so we put the definition here for now
-        def import_dataset_metadata(domain_url, dataset_id):
-            import requests
-            query = requests.get(
-                "https://{}.opendatasoft.com/api/v2/catalog/query?where=datasetid:'{}'".format(domain_url, dataset_id))
-            return query.json()
-
-        metadata = import_dataset_metadata("vroullier", "festivals-du-finistere")
+        metadata = pyqgis_script.import_dataset_metadata("vroullier", "festivals-du-finistere")
 
         for field in metadata["results"][0]["fields"]:
             if field["type"] != "geo_point_2d":
@@ -70,24 +62,7 @@ class MinimalPlugin:
         provider.addAttributes(attribute_list)
         vlayer.updateFields()
 
-        # REMOVE DEF AFTER IMPORT PROBLEM SOLVED
-        # function imports don't seem to work, so we put the definition here for now
-        def import_dataset(domain_url, dataset_id):
-            import requests
-            first_query = requests.get(
-                "https://{}.opendatasoft.com/api/v2/catalog/datasets/{}/query?limit=100".format(domain_url, dataset_id))
-            json_dataset = first_query.json()
-            total_count = json_dataset['total_count']
-            offset = 100
-            while offset <= total_count:
-                query = requests.get(
-                    "https://{}.opendatasoft.com/api/v2/catalog/datasets/{}/query?limit=100&offset={}".format(
-                        domain_url, dataset_id, offset))
-                json_dataset['results'] += query.json()['results']
-                offset += 100
-            return json_dataset
-
-        json_dataset = import_dataset("vroullier","festivals-du-finistere")
+        json_dataset = pyqgis_script.import_dataset("vroullier","festivals-du-finistere")
         feat = QgsFeature()
         for i in range(json_dataset['total_count']):
             coordinates = json_dataset['results'][i][point_attribute]
