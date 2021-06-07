@@ -5,6 +5,8 @@
 # The second function is a way to create a layer from scratch, using the memory provider. The current example creates Futurama data.
 # -------------------------------------------------------------------------------------------------------------------------------------
 
+V2_API_CHUNK_SIZE = 100
+
 
 def create_layer_from_dataset():
     """This script modifies the dataset it uses."""
@@ -66,13 +68,17 @@ def create_layer_with_memory_provider():
 
 def import_dataset(domain_url, dataset_id):
     import requests
-    first_query = requests.get("{}/api/v2/catalog/datasets/{}/query?limit=100".format(domain_url, dataset_id))
+    first_query = requests.get(
+        "https://{}.opendatasoft.com/api/v2/catalog/datasets/{}/query?limit=100".format(domain_url, dataset_id, V2_API_CHUNK_SIZE))
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']
-    offset = 100
+    offset = V2_API_CHUNK_SIZE
     while offset <= total_count:
         query = requests.get(
-            "{}/api/v2/catalog/datasets/{}/query?limit=100&offset={}".format(domain_url, dataset_id, offset))
+            "https://{}.opendatasoft.com/api/v2/catalog/datasets/{}/query?limit={}&offset={}".format(domain_url,
+                                                                                                     dataset_id,
+                                                                                                     V2_API_CHUNK_SIZE,
+                                                                                                     offset))
         json_dataset['results'] += query.json()['results']
         offset += 100
     return json_dataset
@@ -80,13 +86,22 @@ def import_dataset(domain_url, dataset_id):
 
 def import_dataset_list(domain_url):
     import requests
-    first_query = requests.get("{}/api/v2/catalog/query?limit=100".format(domain_url))
+    first_query = requests.get(
+        "https://{}.opendatasoft.com/api/v2/catalog/query?limit={}".format(domain_url, V2_API_CHUNK_SIZE))
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']
-    offset = 100
+    offset = V2_API_CHUNK_SIZE
     while offset <= total_count:
         query = requests.get(
-            "{}/api/v2/catalog/query?limit=100&offset={}".format(domain_url, offset))
+            "https://{}.opendatasoft.com/api/v2/catalog/query?limit={}&offset={}".format(domain_url, V2_API_CHUNK_SIZE,
+                                                                                         offset))
         json_dataset['results'] += query.json()['results']
-        offset += 100
+        offset += V2_API_CHUNK_SIZE
     return json_dataset
+
+
+def import_dataset_metadata(domain_url, dataset_id):
+    import requests
+    query = requests.get(
+        "https://{}.opendatasoft.com/api/v2/catalog/query?where=datasetid:'{}'".format(domain_url, dataset_id))
+    return query.json()

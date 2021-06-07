@@ -12,6 +12,7 @@
 from PyQt5.QtWidgets import QAction, QMessageBox
 
 
+
 def classFactory(iface):
     return MinimalPlugin(iface)
 
@@ -30,36 +31,74 @@ class MinimalPlugin:
         del self.action
 
     def run(self):
-        QMessageBox.information(None, 'Minimal plugin',
-                                "When you press the button, you'll get a new Futurama dataset from scratch.")
+        QMessageBox.information(None, 'ODS plugin',
+                                "When you press the button, you'll get a new dataset from scratch.")
 
         from qgis.core import (QgsVectorLayer, QgsField, QgsFeature, QgsGeometry, QgsPointXY, QgsProject)
         from qgis.PyQt.QtCore import QVariant
         from qgis.gui import QgsMapCanvas
 
-        vlayer = QgsVectorLayer("Point", "temporary_futurama_points", "memory")
+        # DISCLAIMER : only works with Point for now
+        vlayer = QgsVectorLayer("Point", "temporary_dataset_points", "memory")
+        vlayer.dataProvider().setEncoding("UTF-8")
         provider = vlayer.dataProvider()
-        provider.addAttributes([QgsField("name", QVariant.String),
-                                QgsField("age", QVariant.Int),
-                                QgsField("size", QVariant.Double),
-                                QgsField("is_human", QVariant.Bool),
-                                QgsField("date_of_birth", QVariant.Date)])
 
+        json_to_qgis_types = {"text": QVariant.String, "double": QVariant.Double, "int": QVariant.Int,
+                              "boolean": QVariant.Bool, "date": QVariant.Date, "datetime": QVariant.DateTime,
+                              "geo_point_2d": QVariant.String}
+        attribute_list = []
+
+        # REMOVE DEF AFTER IMPORT PROBLEM SOLVED
+        # function imports don't seem to work, so we put the definition here for now
+        def import_dataset_metadata(domain_url, dataset_id):
+            import requests
+            query = requests.get(
+                "https://{}.opendatasoft.com/api/v2/catalog/query?where=datasetid:'{}'".format(domain_url, dataset_id))
+            return query.json()
+
+        metadata = import_dataset_metadata("vroullier", "festivals-du-finistere")
+
+        for field in metadata["results"][0]["fields"]:
+            if field["type"] != "geo_point_2d":
+                if "multivalued" in field["annotations"]:
+                    # Only handles list of string
+                    attribute_list.append(QgsField(field["name"], QVariant.StringList))
+                else:
+                    attribute_list.append(QgsField(field["name"], json_to_qgis_types[field["type"]]))
+            else:
+                point_attribute = field["name"]
+        provider.addAttributes(attribute_list)
         vlayer.updateFields()
 
+        # REMOVE DEF AFTER IMPORT PROBLEM SOLVED
+        # function imports don't seem to work, so we put the definition here for now
+        def import_dataset(domain_url, dataset_id):
+            import requests
+            first_query = requests.get(
+                "https://{}.opendatasoft.com/api/v2/catalog/datasets/{}/query?limit=100".format(domain_url, dataset_id))
+            json_dataset = first_query.json()
+            total_count = json_dataset['total_count']
+            offset = 100
+            while offset <= total_count:
+                query = requests.get(
+                    "https://{}.opendatasoft.com/api/v2/catalog/datasets/{}/query?limit=100&offset={}".format(
+                        domain_url, dataset_id, offset))
+                json_dataset['results'] += query.json()['results']
+                offset += 100
+            return json_dataset
+
+        json_dataset = import_dataset("vroullier","festivals-du-finistere")
         feat = QgsFeature()
-        feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(10, 10)))
-        feat.setAttributes(["Fry", 30, 1.8, True, "1975-01-21"])
-        provider.addFeatures([feat])
-        feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(-10, 10)))
-        feat.setAttributes(["Farnsworth", 200, 1.2, True, "1990-05-29"])
-        provider.addFeatures([feat])
-        feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(10, -10)))
-        feat.setAttributes(["Zoidberg", 50, 1.6, False])
-        provider.addFeatures([feat])
-        feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(-10, -10)))
-        feat.setAttributes(["Bender", 20, 1.8, False, "2100-05-05"])
-        provider.addFeatures([feat])
+        for i in range(json_dataset['total_count']):
+            coordinates = json_dataset['results'][i][point_attribute]
+            feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(coordinates['lon'], coordinates['lat'])))
+            feature_values = []
+            for field in metadata["results"][0]["fields"]:
+                if field["type"] != "geo_point_2d":
+                    feature_values.append(json_dataset['results'][i][field['name']])
+
+            feat.setAttributes(feature_values)
+            provider.addFeatures([feat])
 
         vlayer.updateExtents()
 
