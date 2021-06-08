@@ -10,6 +10,7 @@
 # ---------------------------------------------------------------------
 
 from PyQt5.QtWidgets import QAction, QMessageBox
+
 from . import pyqgis_script
 
 
@@ -34,54 +35,51 @@ class MinimalPlugin:
         QMessageBox.information(None, 'ODS plugin',
                                 "When you press the button, you'll get a new dataset from scratch.")
 
-        from qgis.core import (QgsVectorLayer, QgsField, QgsFeature, QgsGeometry, QgsPointXY, QgsProject)
-        from qgis.PyQt.QtCore import QVariant
-        from qgis.gui import QgsMapCanvas
+        # Input : name of the column that contains the geometry (either geo_point_2d or geo_shape)
+        geom_data_name = "geo_shape"
 
-        # DISCLAIMER : only works with Point for now
-        vlayer = QgsVectorLayer("Point", "temporary_dataset_points", "memory")
-        vlayer.dataProvider().setEncoding("UTF-8")
-        provider = vlayer.dataProvider()
+        metadata = pyqgis_script.import_dataset_metadata("vroullier", "provinces-and-territories-canada")
+        dataset = pyqgis_script.import_dataset("vroullier", "provinces-and-territories-canada")
 
-        json_to_qgis_types = {"text": QVariant.String, "double": QVariant.Double, "int": QVariant.Int,
-                              "boolean": QVariant.Bool, "date": QVariant.Date, "datetime": QVariant.DateTime,
-                              "geo_point_2d": QVariant.String}
-        attribute_list = []
+        for column in metadata["results"][0]["fields"]:
+            if column["name"] == geom_data_name:
+                geom_data_type = column["type"]
+            # TODO check if geo_shape or geo_point_2d
 
-        metadata = pyqgis_script.import_dataset_metadata("vroullier", "festivals-du-finistere")
+        attribute_list = pyqgis_script.create_attributes(metadata, geom_data_type)
 
-        for field in metadata["results"][0]["fields"]:
-            if field["type"] != "geo_point_2d":
-                if "multivalued" in field["annotations"]:
-                    # Only handles list of string
-                    attribute_list.append(QgsField(field["name"], QVariant.StringList))
-                else:
-                    attribute_list.append(QgsField(field["name"], json_to_qgis_types[field["type"]]))
-            else:
-                point_attribute = field["name"]
-        provider.addAttributes(attribute_list)
-        vlayer.updateFields()
+        if geom_data_type == "geo_point_2d":
+            pyqgis_script.create_layer_old("Point", metadata, geom_data_type, dataset, geom_data_name,
+                                           attribute_list)
+        elif geom_data_type == "geo_shape":
+            geometry_set = set()
+            layer_dict = {}
+            for line in range(dataset["total_count"]):
+                json_geometry = dataset["results"][line][geom_data_name]["geometry"]["type"]
+                json_geometry = pyqgis_script.geom_to_multi_geom(json_geometry)
+                # TODO : check if json_geometry in accepted geometries, namely MultiPolygon, MultiLineString, MultiPoint
+                if json_geometry not in geometry_set:
+                    geometry_set.add(json_geometry)
+                    layer = pyqgis_script.create_layer(json_geometry, attribute_list)
+                    layer_dict[json_geometry] = layer
+                    # TODO : else : not an accepted geojson geom, exception
+                pyqgis_script.fill_layer(layer_dict[json_geometry], metadata, dataset, geom_data_type, geom_data_name,
+                                         line)
 
-        json_dataset = pyqgis_script.import_dataset("vroullier","festivals-du-finistere")
-        feat = QgsFeature()
-        for i in range(json_dataset['total_count']):
-            coordinates = json_dataset['results'][i][point_attribute]
-            feat.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(coordinates['lon'], coordinates['lat'])))
-            feature_values = []
-            for field in metadata["results"][0]["fields"]:
-                if field["type"] != "geo_point_2d":
-                    feature_values.append(json_dataset['results'][i][field['name']])
+            features = layer_dict["MultiPolygon"].getFeatures()
+            for feat in features:
+                print("F:", feat.id(), feat.attributes(), feat.geometry())
 
-            feat.setAttributes(feature_values)
-            provider.addFeatures([feat])
+            for layer in layer_dict.values():
+                layer.updateExtents()
 
-        vlayer.updateExtents()
+            features = layer_dict["MultiPolygon"].getFeatures()
+            for feat in features:
+                print("F:", feat.id(), feat.attributes(), feat.geometry())
 
-        features = vlayer.getFeatures()
-        for fet in features:
-            print("F:", fet.id(), fet.attributes(), fet.geometry().asPoint())
-
-        QgsProject.instance().addMapLayer(vlayer)
-        canvas = QgsMapCanvas()
-        canvas.setExtent(vlayer.extent())
-        canvas.setLayers([vlayer])
+            from qgis.core import QgsProject
+            from qgis.gui import QgsMapCanvas
+            QgsProject.instance().addMapLayer(layer_dict["MultiPolygon"])
+            canvas = QgsMapCanvas()
+            canvas.setExtent(layer_dict["MultiPolygon"].extent())
+            canvas.setLayers([layer_dict["MultiPolygon"]])
