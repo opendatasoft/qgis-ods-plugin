@@ -4,6 +4,12 @@
 # The first function is a way to create a layer using an existing dataset. The current example uses the Festivals du Finistère dataset.
 # The second function is a way to create a layer from scratch, using the memory provider. The current example creates Futurama data.
 # -------------------------------------------------------------------------------------------------------------------------------------
+from qgis.PyQt.QtCore import QVariant
+
+V2_API_CHUNK_SIZE = 100
+JSON_TO_QGIS_TYPES = {"text": QVariant.String, "double": QVariant.Double, "int": QVariant.Int,
+                      "boolean": QVariant.Bool, "date": QVariant.Date, "datetime": QVariant.DateTime,
+                      "geo_point_2d": QVariant.String}
 
 
 def create_layer_from_dataset():
@@ -66,13 +72,18 @@ def create_layer_with_memory_provider():
 
 def import_dataset(domain_url, dataset_id):
     import requests
-    first_query = requests.get("{}/api/v2/catalog/datasets/{}/query?limit=100".format(domain_url, dataset_id))
+    first_query = requests.get(
+        "https://{}.opendatasoft.com/api/v2/catalog/datasets/{}/query?limit=100".format(domain_url, dataset_id,
+                                                                                        V2_API_CHUNK_SIZE))
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']
-    offset = 100
+    offset = V2_API_CHUNK_SIZE
     while offset <= total_count:
         query = requests.get(
-            "{}/api/v2/catalog/datasets/{}/query?limit=100&offset={}".format(domain_url, dataset_id, offset))
+            "https://{}.opendatasoft.com/api/v2/catalog/datasets/{}/query?limit={}&offset={}".format(domain_url,
+                                                                                                     dataset_id,
+                                                                                                     V2_API_CHUNK_SIZE,
+                                                                                                     offset))
         json_dataset['results'] += query.json()['results']
         offset += 100
     return json_dataset
@@ -80,13 +91,116 @@ def import_dataset(domain_url, dataset_id):
 
 def import_dataset_list(domain_url):
     import requests
-    first_query = requests.get("{}/api/v2/catalog/query?limit=100".format(domain_url))
+    first_query = requests.get(
+        "https://{}.opendatasoft.com/api/v2/catalog/query?limit={}".format(domain_url, V2_API_CHUNK_SIZE))
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']
-    offset = 100
+    offset = V2_API_CHUNK_SIZE
     while offset <= total_count:
         query = requests.get(
-            "{}/api/v2/catalog/query?limit=100&offset={}".format(domain_url, offset))
+            "https://{}.opendatasoft.com/api/v2/catalog/query?limit={}&offset={}".format(domain_url, V2_API_CHUNK_SIZE,
+                                                                                         offset))
         json_dataset['results'] += query.json()['results']
-        offset += 100
+        offset += V2_API_CHUNK_SIZE
     return json_dataset
+
+
+def import_dataset_metadata(domain_url, dataset_id):
+    import requests
+    query = requests.get(
+        "https://{}.opendatasoft.com/api/v2/catalog/query?where=datasetid:'{}'".format(domain_url, dataset_id))
+    return query.json()
+
+
+def create_layer_old(json_geometry, metadata, geom_data_type, dataset, geom_data_name, attribute_list):
+    from qgis.core import (QgsVectorLayer, QgsFeature, QgsGeometry, QgsPointXY, QgsProject)
+    from qgis.gui import QgsMapCanvas
+
+    vlayer = QgsVectorLayer(json_geometry, "temporary_dataset_points", "memory")
+    vlayer.dataProvider().setEncoding("UTF-8")
+    provider = vlayer.dataProvider()
+    provider.addAttributes(attribute_list)
+    vlayer.updateFields()
+
+    magic_length = len(dataset['results'])
+    for i in range(magic_length):
+        feature = QgsFeature()
+        coordinates = dataset['results'][i][geom_data_name]
+        # if geometry is Point, else adapt with right geometry e.g. QgsMultiPolygonXY
+        if geom_data_type == "geo_point_2d":
+            feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(coordinates['lon'], coordinates['lat'])))
+        else:
+            print("no geom for you")
+        feature_values = []
+        for field in metadata["results"][0]["fields"]:
+            if field["type"] != geom_data_type:  # if geom attribute is geo_point_2d, else adapt with geo_shape
+                feature_values.append(dataset['results'][i][field['name']])
+
+        feature.setAttributes(feature_values)
+        provider.addFeatures([feature])
+
+    vlayer.updateExtents()
+    QgsProject.instance().addMapLayer(vlayer)
+    canvas = QgsMapCanvas()
+    canvas.setExtent(vlayer.extent())
+    canvas.setLayers([vlayer])
+
+
+def create_layer(json_geometry, attribute_list):
+    from qgis.core import QgsVectorLayer
+    layer = QgsVectorLayer(json_geometry, "temporary_dataset_{}".format(json_geometry), "memory")
+    layer.dataProvider().setEncoding("UTF-8")
+    provider = layer.dataProvider()
+    provider.addAttributes(attribute_list)
+    layer.updateFields()
+    return layer
+
+
+def fill_layer(layer, metadata, dataset, geom_data_type, geom_data_name, line):
+    from qgis.core import (QgsFeature, QgsGeometry, QgsPointXY, QgsMultiPolygon, QgsMultiLineString,
+                           QgsMultiPoint, QgsPoint)
+    from osgeo import ogr
+    import json
+
+    provider = layer.dataProvider()
+    feature = QgsFeature()
+    geometry = dataset['results'][line][geom_data_name]["geometry"]
+
+    if geom_data_type == "geo_point_2d":
+        feature.setGeometry(
+            QgsGeometry.fromPointXY(QgsPointXY(geometry["coordinates"]['lon'], geometry["coordinates"]['lat'])))
+    else:
+        geometry_string = json.dumps(geometry)
+        geom = ogr.CreateGeometryFromJson(geometry_string)
+        feature.setGeometry(QgsGeometry.fromWkt(geom.ExportToWkt()))
+    feature_values = []
+    for field in metadata["results"][0]["fields"]:
+        if field["type"] != geom_data_type and field["type"] != "geo_point_2d":
+            feature_values.append(dataset['results'][line][field['name']])
+
+    feature.setAttributes(feature_values)
+    print(feature.attributes(), feature.geometry())
+    provider.addFeatures([feature])
+
+
+def create_attributes(metadata, geom_data_type):
+    from qgis.PyQt.QtCore import QVariant
+    from qgis.core import QgsField
+
+    attribute_list = []
+    for field in metadata["results"][0]["fields"]:
+        if field["type"] != geom_data_type and field["type"] != "geo_point_2d":
+            if "multivalued" in field["annotations"]:
+                if field["type"] == "text":
+                    attribute_list.append(QgsField(field["name"], QVariant.StringList))
+                else:
+                    attribute_list.append(QgsField(field["name"], QVariant.List))
+            else:
+                attribute_list.append(QgsField(field["name"], JSON_TO_QGIS_TYPES[field["type"]]))
+    return attribute_list
+
+
+def geom_to_multi_geom(geometry):
+    if "Multi" not in geometry:
+        geometry = "Multi" + geometry
+    return geometry
