@@ -8,10 +8,10 @@ from qgis.PyQt.QtCore import QVariant
 
 V2_API_CHUNK_SIZE = 100
 JSON_TO_QGIS_TYPES = {"text": QVariant.String, "double": QVariant.Double, "int": QVariant.Int,
-                      "boolean": QVariant.Bool, "date": QVariant.Date, "datetime": QVariant.DateTime,
+                      "boolean": QVariant.Bool, "date": QVariant.String, "datetime": QVariant.DateTime,
                       "geo_point_2d": QVariant.List}
-ACCEPTED_GEOMETRY = {"MultiPoint", "MultiLineString", "MultiPolygon"}
-ACCEPTED_TYPE = {"geo_point2d", "geo_shape"}
+ACCEPTED_GEOMETRY = {"MultiPoint", "MultiLineString", "MultiPolygon", "Point", "LineString", "Polygon"}
+ACCEPTED_TYPE = {"geo_point_2d", "geo_shape"}
 
 
 def import_dataset(domain_url, dataset_id):
@@ -128,14 +128,13 @@ def import_to_qgis(plugin_input):
     for column in metadata["results"][0]["fields"]:
         if column["name"] == geom_data_name:
             geom_data_type = column["type"]
-    # TODO proper exception
     if geom_data_type not in ACCEPTED_TYPE:
-        print("bad column")
-        """from qgis.core import (Qgis, QgsMessageLog)
-        QgsMessageLog.logMessage("Your plugin code has crashed!", level=Qgis.Critical)"""
+        raise TypeError("The geometry column from the dataset doesn't have a valid type. "
+                        "Valid types are " + ", ".join(ACCEPTED_TYPE))
 
     attribute_list = create_attributes(metadata, geom_data_type)
     layer_dict = {}
+
     if geom_data_type == "geo_point_2d":
         layer = create_layer("Point", attribute_list)
         layer_dict["Point"] = layer
@@ -160,8 +159,9 @@ def import_to_qgis(plugin_input):
                     layer_dict[json_geometry].addFeatures([feature])
                     layer_dict[json_geometry].commitChanges()
                 else:
-                    # TODO : have a proper exception
-                    print("exception")
+                    raise TypeError(
+                        "One of the feature has an unaccepted geometry. Accepted geometries are " +
+                        ", ".join(ACCEPTED_GEOMETRY))
 
     for layer in layer_dict.values():
         layer.updateExtents()
