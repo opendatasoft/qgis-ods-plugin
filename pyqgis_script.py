@@ -6,6 +6,7 @@
 # -------------------------------------------------------------------------------------------------------------------------------------
 from qgis.PyQt.QtCore import QVariant
 
+V2_QUERY_SIZE_LIMIT = 10000
 V2_API_CHUNK_SIZE = 100
 JSON_TO_QGIS_TYPES = {"text": QVariant.String, "double": QVariant.Double, "int": QVariant.Int,
                       "boolean": QVariant.Bool, "date": QVariant.String, "datetime": QVariant.DateTime,
@@ -22,7 +23,7 @@ def import_dataset(domain_url, dataset_id):
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']
     offset = V2_API_CHUNK_SIZE
-    while offset <= total_count and offset < 200:
+    while offset <= total_count and offset < V2_QUERY_SIZE_LIMIT - V2_API_CHUNK_SIZE:
         query = requests.get(
             "https://{}.opendatasoft.com/api/v2/catalog/datasets/{}/query?limit={}&offset={}".format(domain_url,
                                                                                                      dataset_id,
@@ -40,13 +41,20 @@ def import_dataset_list(domain_url):
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']
     offset = V2_API_CHUNK_SIZE
-    while offset <= total_count:
+    while offset <= total_count and offset < V2_QUERY_SIZE_LIMIT - V2_API_CHUNK_SIZE:
         query = requests.get(
             "https://{}.opendatasoft.com/api/v2/catalog/query?limit={}&offset={}".format(domain_url, V2_API_CHUNK_SIZE,
                                                                                          offset))
         json_dataset['results'] += query.json()['results']
         offset += V2_API_CHUNK_SIZE
     return json_dataset
+
+
+def datasets_to_dataset_id_list(json_dataset):
+    dataset_id_list = []
+    for i in range(json_dataset['total_count']):
+        dataset_id_list.append(json_dataset['results'][i]['dataset_id'])
+    return dataset_id_list
 
 
 def import_dataset_metadata(domain_url, dataset_id):
@@ -61,15 +69,15 @@ def create_attributes(metadata, geom_data_type):
     from qgis.core import QgsField
 
     attribute_list = []
-    for field in metadata["results"][0]["fields"]:
-        if field["type"] != geom_data_type:
-            if "multivalued" in field["annotations"]:
-                if field["type"] == "text":
-                    attribute_list.append(QgsField(field["name"], QVariant.StringList))
+    for field in metadata['results'][0]['fields']:
+        if field['type'] != geom_data_type:
+            if "multivalued" in field['annotations']:
+                if field['type'] == "text":
+                    attribute_list.append(QgsField(field['name'], QVariant.StringList))
                 else:
-                    attribute_list.append(QgsField(field["name"], QVariant.List))
+                    attribute_list.append(QgsField(field['name'], QVariant.List))
             else:
-                attribute_list.append(QgsField(field["name"], JSON_TO_QGIS_TYPES[field["type"]]))
+                attribute_list.append(QgsField(field['name'], JSON_TO_QGIS_TYPES[field["type"]]))
     return attribute_list
 
 
@@ -128,6 +136,7 @@ def import_to_qgis(plugin_input):
     for column in metadata["results"][0]["fields"]:
         if column["name"] == geom_data_name:
             geom_data_type = column["type"]
+    #TODO Try catch instead of if raise, so as to know where it crashes
     if geom_data_type not in ACCEPTED_TYPE:
         raise TypeError("The geometry column from the dataset doesn't have a valid type. "
                         "Valid types are " + ", ".join(ACCEPTED_TYPE))
@@ -158,6 +167,7 @@ def import_to_qgis(plugin_input):
                     feature = create_feature(metadata, dataset, geom_data_type, geom_data_name, line)
                     layer_dict[json_geometry].addFeatures([feature])
                     layer_dict[json_geometry].commitChanges()
+                # TODO Try catch instead of if raise, so as to know where it crashes
                 else:
                     raise TypeError(
                         "One of the feature has an unaccepted geometry. Accepted geometries are " +
@@ -176,6 +186,3 @@ def import_to_qgis(plugin_input):
         canvas.setLayers([layer])
 
 
-"""provider = layer_dict[json_geometry].dataProvider()
-                feature = pyqgis_script.create_feature(metadata, dataset, geom_data_type, geom_data_name, line)
-                provider.addFeatures([feature])"""
