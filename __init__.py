@@ -53,9 +53,10 @@ class InputDialog(QtWidgets.QDialog):
         self.domainInput = self.findChild(QtWidgets.QLineEdit, 'domainInput')
         self.updateListButton = self.findChild(QtWidgets.QPushButton, 'updateListButton')
         self.datasetListComboBox = self.findChild(QtWidgets.QComboBox, 'datasetListComboBox')
-        self.geometryInput = self.findChild(QtWidgets.QLineEdit, 'geometryInput')
+        self.geomColumnListComboBox = self.findChild(QtWidgets.QComboBox, 'geomColumnListComboBox')
 
         self.updateListButton.clicked.connect(self.updateListButtonPressed)
+        self.datasetListComboBox.currentTextChanged.connect(self.updateGeomColumnListComboBox)
 
         self.show()
 
@@ -64,5 +65,13 @@ class InputDialog(QtWidgets.QDialog):
         self.datasetListComboBox.addItems(
             pyqgis_script.datasets_to_dataset_id_list(pyqgis_script.import_dataset_list(self.domainInput.text())))
 
+    def updateGeomColumnListComboBox(self):
+        self.geomColumnListComboBox.clear()
+        self.geomColumnListComboBox.addItems(
+            pyqgis_script.possible_geom_columns_from_metadata(pyqgis_script.import_dataset_metadata(
+                self.domainInput.text(), self.datasetListComboBox.currentText())))
+
     def getInputs(self):
-        return self.domainInput.text(), self.datasetListComboBox.currentText(), self.geometryInput.text()
+        return self.domainInput.text(), self.datasetListComboBox.currentText(), self.geomColumnListComboBox.currentText()
+
+#TODO : if 1 or more geo_shape, column combobox; if 0, combox for geo_point2d

@@ -64,6 +64,18 @@ def import_dataset_metadata(domain_url, dataset_id):
     return query.json()
 
 
+def possible_geom_columns_from_metadata(metadata):
+    geom_column_names = []
+    for field in metadata['results'][0]['fields']:
+        if field['type'] == "geo_shape":
+            geom_column_names.append(field['name'])
+    if not geom_column_names:
+        for field in metadata['results'][0]['fields']:
+            if field['type'] == "geo_point_2d":
+                geom_column_names.append(field['name'])
+    return geom_column_names
+
+
 def create_attributes(metadata, geom_data_type):
     from qgis.PyQt.QtCore import QVariant
     from qgis.core import QgsField
@@ -136,7 +148,7 @@ def import_to_qgis(plugin_input):
     for column in metadata["results"][0]["fields"]:
         if column["name"] == geom_data_name:
             geom_data_type = column["type"]
-    #TODO Try catch instead of if raise, so as to know where it crashes
+    # TODO Try catch instead of if raise, so as to know where it crashes
     if geom_data_type not in ACCEPTED_TYPE:
         raise TypeError("The geometry column from the dataset doesn't have a valid type. "
                         "Valid types are " + ", ".join(ACCEPTED_TYPE))
@@ -184,5 +196,3 @@ def import_to_qgis(plugin_input):
     for layer in layer_dict.values():
         canvas.setExtent(layer.extent())
         canvas.setLayers([layer])
-
-
