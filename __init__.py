@@ -39,7 +39,7 @@ class MinimalPlugin:
         if dialog.exec():
             plugin_input["domain"], plugin_input["dataset_id"], plugin_input["geom_data_name"] = dialog.getInputs()
         # TODO : deal with conversion from type to qgsField UPDATE : /export will deal with that
-        # TODO : add error for : wrong domain
+        # TODO : add error for : unknown domain, domain with no geometry column, with no dataset
             pyqgis_script.import_to_qgis(plugin_input)
 
 
@@ -73,5 +73,3 @@ class InputDialog(QtWidgets.QDialog):
 
     def getInputs(self):
         return self.domainInput.text(), self.datasetListComboBox.currentText(), self.geomColumnListComboBox.currentText()
-
-#TODO : if 1 or more geo_shape, column combobox; if 0, combox for geo_point2d
