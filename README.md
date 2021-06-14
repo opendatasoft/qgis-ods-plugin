@@ -11,4 +11,4 @@ For installing, just clone this repo in your QGIS profile directory:
 
 Then start QGIS and enable the plugin (menu Plugins > Manager and Install Plugins...) 
 
-For now, input is entered manually : change the input_plugin dictionnary in __init__.py to adapt.
+Tip : it is better to launch Qgis' Python plugin before using this Plugin.
