@@ -2,7 +2,7 @@ import os
 
 from PyQt5 import QtWidgets, uic
 
-import helper_functions
+from . import helper_functions
 
 
 class InputDialog(QtWidgets.QDialog):

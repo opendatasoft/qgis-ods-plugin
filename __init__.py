@@ -8,11 +8,10 @@
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 # ---------------------------------------------------------------------
-import os
+
 from PyQt5 import QtWidgets
 
-from ui_methods import InputDialog
-from . import helper_functions
+from . import helper_functions, ui_methods
 
 
 def classFactory(iface):
@@ -33,7 +32,7 @@ class MinimalPlugin:
         del self.action
 
     def run(self):
-        dialog = InputDialog()
+        dialog = ui_methods.InputDialog()
         if dialog.exec():
             if dialog.domain() == "" or dialog.dataset_id() == "" or dialog.geom_data_name() == "":
                 QtWidgets.QMessageBox.information(None, "ERROR:", "All fields must be filled to import a dataset.")
