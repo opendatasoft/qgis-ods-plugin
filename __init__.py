@@ -9,11 +9,10 @@
 # (at your option) any later version.
 # ---------------------------------------------------------------------
 import os
+from PyQt5 import QtWidgets
 
-from PyQt5 import QtWidgets, uic
-import sys
-
-from . import pyqgis_script
+from ui_methods import InputDialog
+from . import helper_functions
 
 
 def classFactory(iface):
@@ -35,41 +34,10 @@ class MinimalPlugin:
 
     def run(self):
         dialog = InputDialog()
-        plugin_input = {}
         if dialog.exec():
-            plugin_input["domain"], plugin_input["dataset_id"], plugin_input["geom_data_name"] = dialog.getInputs()
-        # TODO : deal with conversion from type to qgsField UPDATE : /export will deal with that
-        # TODO : add error for : unknown domain, domain with no geometry column, with no dataset
-            pyqgis_script.import_to_qgis(plugin_input)
-
-
-class InputDialog(QtWidgets.QDialog):
-    def __init__(self):
-        super(InputDialog, self).__init__()
-        ui_dir = os.path.dirname(os.path.abspath(__file__))
-        ui_path = os.path.join(ui_dir, 'plugin_dialog.ui')
-        uic.loadUi(ui_path, self)
-
-        self.domainInput = self.findChild(QtWidgets.QLineEdit, 'domainInput')
-        self.updateListButton = self.findChild(QtWidgets.QPushButton, 'updateListButton')
-        self.datasetListComboBox = self.findChild(QtWidgets.QComboBox, 'datasetListComboBox')
-        self.geomColumnListComboBox = self.findChild(QtWidgets.QComboBox, 'geomColumnListComboBox')
-
-        self.updateListButton.clicked.connect(self.updateListButtonPressed)
-        self.datasetListComboBox.currentTextChanged.connect(self.updateGeomColumnListComboBox)
-
-        self.show()
-
-    def updateListButtonPressed(self):
-        self.datasetListComboBox.clear()
-        self.datasetListComboBox.addItems(
-            pyqgis_script.datasets_to_dataset_id_list(pyqgis_script.import_dataset_list(self.domainInput.text())))
-
-    def updateGeomColumnListComboBox(self):
-        self.geomColumnListComboBox.clear()
-        self.geomColumnListComboBox.addItems(
-            pyqgis_script.possible_geom_columns_from_metadata(pyqgis_script.import_dataset_metadata(
-                self.domainInput.text(), self.datasetListComboBox.currentText())))
-
-    def getInputs(self):
-        return self.domainInput.text(), self.datasetListComboBox.currentText(), self.geomColumnListComboBox.currentText()
+            if dialog.domain() == "" or dialog.dataset_id() == "" or dialog.geom_data_name() == "":
+                QtWidgets.QMessageBox.information(None, "ERROR:", "All fields must be filled to import a dataset.")
+                raise ValueError("One or more fields are empty.")
+            # TODO : deal with conversion from type to qgsField UPDATE : /export will deal with that
+            # TODO : UPDATE : if we really keep export but we don't really know because heyyyyyy
+            helper_functions.import_to_qgis(dialog.domain(), dialog.dataset_id(), dialog.geom_data_name())
