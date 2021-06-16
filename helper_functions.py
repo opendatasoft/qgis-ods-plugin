@@ -1,7 +1,4 @@
-# -------------------------------------------------------------------------------------------------------------------------------------
-# TODO : UPDATE DESCRIPTION
-# -------------------------------------------------------------------------------------------------------------------------------------
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5 import QtWidgets
 from qgis.PyQt.QtCore import QVariant
 
 V2_QUERY_SIZE_LIMIT = 10000
@@ -13,45 +10,55 @@ ACCEPTED_GEOMETRY = {"MultiPoint", "MultiLineString", "MultiPolygon", "Point", "
 ACCEPTED_TYPE = {"geo_point_2d", "geo_shape"}
 
 
-def import_dataset(domain_url, dataset_id):
+# TODO : select il faut boucler sur metadata pour créer un dict (name type)
+#  et créer les attributs à partir de ligne 1 du dataset
+
+
+def import_dataset(domain_url, dataset_id, params, number_of_lines):
     import requests
+    params['limit'] = min(V2_API_CHUNK_SIZE, number_of_lines)
     first_query = requests.get(
-        "https://{}/api/v2/catalog/datasets/{}/query?limit=100".format(domain_url, dataset_id,
-                                                                       V2_API_CHUNK_SIZE))
+        "https://{}/api/v2/catalog/datasets/{}/query".format(domain_url, dataset_id), params)
     if first_query.status_code == 404:
-        QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
-        raise ValueError("The dataset you want does not exist on this domain.")
+        QtWidgets.QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
+        return
+    elif first_query.status_code == 400:
+        QtWidgets.QMessageBox.information(None, "ERROR:", "One of your odsql statement is malformed.")
+        return
+    number_of_lines -= V2_API_CHUNK_SIZE
+
+    params['limit'] = min(V2_API_CHUNK_SIZE, number_of_lines)
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']
-    offset = V2_API_CHUNK_SIZE
-    while offset <= total_count and offset < V2_QUERY_SIZE_LIMIT - V2_API_CHUNK_SIZE:
+    params['offset'] = V2_API_CHUNK_SIZE
+    while params['offset'] <= total_count and params['offset'] < V2_QUERY_SIZE_LIMIT - V2_API_CHUNK_SIZE \
+            and number_of_lines >= 0:
         query = requests.get(
-            "https://{}/api/v2/catalog/datasets/{}/query?limit={}&offset={}".format(domain_url,
-                                                                                    dataset_id,
-                                                                                    V2_API_CHUNK_SIZE,
-                                                                                    offset))
+            "https://{}/api/v2/catalog/datasets/{}/query".format(domain_url, dataset_id), params)
         json_dataset['results'] += query.json()['results']
-        offset += V2_API_CHUNK_SIZE
+        params['offset'] += V2_API_CHUNK_SIZE
+        number_of_lines -= V2_API_CHUNK_SIZE
+        params['limit'] = min(V2_API_CHUNK_SIZE, number_of_lines)
     return json_dataset
 
 
 def import_dataset_list(domain_url):
+    params = {'limit': V2_API_CHUNK_SIZE}
     import requests
     try:
         first_query = requests.get(
-            "https://{}/api/v2/catalog/query?limit={}".format(domain_url, V2_API_CHUNK_SIZE))
+            "https://{}/api/v2/catalog/query".format(domain_url))
     except requests.exceptions.ConnectionError:
-        QMessageBox.information(None, "ERROR:", "This domain does not exist.")
-        raise
+        QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
+        return
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']
-    offset = V2_API_CHUNK_SIZE
-    while offset <= total_count and offset < V2_QUERY_SIZE_LIMIT - V2_API_CHUNK_SIZE:
+    params['offset'] = V2_API_CHUNK_SIZE
+    while params['offset'] <= total_count and params['offset'] < V2_QUERY_SIZE_LIMIT - V2_API_CHUNK_SIZE:
         query = requests.get(
-            "https://{}/api/v2/catalog/query?limit={}&offset={}".format(domain_url, V2_API_CHUNK_SIZE,
-                                                                        offset))
+            "https://{}/api/v2/catalog/query".format(domain_url))
         json_dataset['results'] += query.json()['results']
-        offset += V2_API_CHUNK_SIZE
+        params['offset'] += V2_API_CHUNK_SIZE
     return json_dataset
 
 
@@ -65,8 +72,8 @@ def import_dataset_metadata(domain_url, dataset_id):
     query = requests.get(
         "https://{}/api/v2/catalog/query?where=datasetid:'{}'".format(domain_url, dataset_id))
     if query.status_code == 404:
-        QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
-        raise ValueError("The dataset you want does not exist on this domain.")
+        QtWidgets.QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
+        return
     return query.json()
 
 
@@ -101,9 +108,9 @@ def geom_to_multi_geom(geometry):
     return geometry
 
 
-def create_layer(json_geometry, attribute_list):
+def create_layer(json_geometry, dataset_id, attribute_list):
     from qgis.core import QgsVectorLayer
-    layer = QgsVectorLayer(json_geometry, "temporary_dataset_{}".format(json_geometry), "memory")
+    layer = QgsVectorLayer(json_geometry, dataset_id + "_" + json_geometry, "memory")
     layer.dataProvider().setEncoding("UTF-8")
     provider = layer.dataProvider()
     provider.addAttributes(attribute_list)
@@ -136,9 +143,12 @@ def create_feature(metadata, dataset, geom_data_type, geom_data_name, line):
     return feature
 
 
-def import_to_qgis(domain, dataset_id, geom_data_name):
+def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_lines=V2_QUERY_SIZE_LIMIT):
     metadata = import_dataset_metadata(domain, dataset_id)
-    dataset = import_dataset(domain, dataset_id)
+    if number_of_lines <= 0:
+        QtWidgets.QMessageBox.information(None, "ERROR:", "Number of lines has to be a strictly positive int.")
+        return
+    dataset = import_dataset(domain, dataset_id, params, number_of_lines)
 
     geom_data_type = ""
     for column in metadata["results"][0]["fields"]:
@@ -149,13 +159,16 @@ def import_to_qgis(domain, dataset_id, geom_data_name):
     layer_dict = {}
 
     if geom_data_type == "geo_point_2d":
-        layer = create_layer("Point", attribute_list)
+        layer = create_layer("Point", dataset_id, attribute_list)
         layer_dict["Point"] = layer
         layer_dict["Point"].startEditing()
         feature_list = []
-        for line in range(dataset["total_count"]):
-            feature = create_feature(metadata, dataset, geom_data_type, geom_data_name, line)
-            feature_list.append(feature)
+        for line in range(len(dataset['results'])):
+            if dataset["results"][line][geom_data_name] is not None:
+                feature = create_feature(metadata, dataset, geom_data_type, geom_data_name, line)
+                feature_list.append(feature)
+                percent = int(line / float(len(dataset['results'])-1) * 100)
+                iface.statusBarIface().showMessage("Processed {} %".format(percent))
         layer_dict["Point"].addFeatures(feature_list)
         layer_dict["Point"].commitChanges()
     elif geom_data_type == "geo_shape":
@@ -167,16 +180,18 @@ def import_to_qgis(domain, dataset_id, geom_data_name):
                 if json_geometry in ACCEPTED_GEOMETRY:
                     if json_geometry not in geometry_set:
                         geometry_set.add(json_geometry)
-                        layer = create_layer(json_geometry, attribute_list)
+                        layer = create_layer(json_geometry, dataset_id, attribute_list)
                         layer_dict[json_geometry] = layer
                     layer_dict[json_geometry].startEditing()
                     feature = create_feature(metadata, dataset, geom_data_type, geom_data_name, line)
                     layer_dict[json_geometry].addFeatures([feature])
                     layer_dict[json_geometry].commitChanges()
+                    percent = int(line / float(len(dataset['results']) - 1) * 100)
+                    iface.mainWindow().statusBar().showMessage("Processed {} %".format(percent))
                 else:
-                    QMessageBox.information(None, "ERROR:",
-                                            "This json geometry isn't valid. Valid geometries are "
-                                            + ", ".join(ACCEPTED_GEOMETRY) + ".")
+                    QtWidgets.QMessageBox.information(None, "ERROR:",
+                                                      "This json geometry isn't valid. Valid geometries are "
+                                                      + ", ".join(ACCEPTED_GEOMETRY) + ".")
 
     for layer in layer_dict.values():
         layer.updateExtents()
