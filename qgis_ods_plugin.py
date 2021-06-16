@@ -43,5 +43,3 @@ class QgisOdsPlugin:
                 settings.setValue('domain_name_cache', dialog.domain())
             # TODO : deal with conversion from type to qgsField : do default string and if date works, date ?
             #  but how ? Hoooooooooooow ?
-            # TODO : investigate "downloading" message
-

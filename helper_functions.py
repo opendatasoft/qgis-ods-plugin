@@ -14,9 +14,10 @@ ACCEPTED_TYPE = {"geo_point_2d", "geo_shape"}
 #  et créer les attributs à partir de ligne 1 du dataset
 
 
-def import_dataset(domain_url, dataset_id, params, number_of_lines):
+def import_dataset(iface, domain_url, dataset_id, params, number_of_lines):
     import requests
-    params['limit'] = min(V2_API_CHUNK_SIZE, number_of_lines)
+    number_of_lines_left = number_of_lines
+    params['limit'] = min(V2_API_CHUNK_SIZE, number_of_lines_left)
     first_query = requests.get(
         "https://{}/api/v2/catalog/datasets/{}/query".format(domain_url, dataset_id), params)
     if first_query.status_code == 404:
@@ -25,20 +26,24 @@ def import_dataset(domain_url, dataset_id, params, number_of_lines):
     elif first_query.status_code == 400:
         QtWidgets.QMessageBox.information(None, "ERROR:", "One of your odsql statement is malformed.")
         return
-    number_of_lines -= V2_API_CHUNK_SIZE
+    number_of_lines_left -= V2_API_CHUNK_SIZE
 
-    params['limit'] = min(V2_API_CHUNK_SIZE, number_of_lines)
+    params['limit'] = min(V2_API_CHUNK_SIZE, number_of_lines_left)
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']
     params['offset'] = V2_API_CHUNK_SIZE
     while params['offset'] <= total_count and params['offset'] < V2_QUERY_SIZE_LIMIT - V2_API_CHUNK_SIZE \
-            and number_of_lines >= 0:
+            and number_of_lines_left >= 0:
         query = requests.get(
             "https://{}/api/v2/catalog/datasets/{}/query".format(domain_url, dataset_id), params)
         json_dataset['results'] += query.json()['results']
         params['offset'] += V2_API_CHUNK_SIZE
-        number_of_lines -= V2_API_CHUNK_SIZE
-        params['limit'] = min(V2_API_CHUNK_SIZE, number_of_lines)
+        number_of_lines_left -= V2_API_CHUNK_SIZE
+        params['limit'] = min(V2_API_CHUNK_SIZE, number_of_lines_left)
+
+        percent = int(params['offset'] / number_of_lines * 100)
+        iface.mainWindow().statusBar().showMessage("Importing dataset {} %".format(percent))
+        QtWidgets.QApplication.processEvents()
     return json_dataset
 
 
@@ -148,7 +153,7 @@ def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_
     if number_of_lines <= 0:
         QtWidgets.QMessageBox.information(None, "ERROR:", "Number of lines has to be a strictly positive int.")
         return
-    dataset = import_dataset(domain, dataset_id, params, number_of_lines)
+    dataset = import_dataset(iface, domain, dataset_id, params, number_of_lines)
 
     geom_data_type = ""
     for column in metadata["results"][0]["fields"]:
@@ -167,8 +172,10 @@ def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_
             if dataset["results"][line][geom_data_name] is not None:
                 feature = create_feature(metadata, dataset, geom_data_type, geom_data_name, line)
                 feature_list.append(feature)
+
                 percent = int(line / float(len(dataset['results'])-1) * 100)
-                iface.statusBarIface().showMessage("Processed {} %".format(percent))
+                iface.statusBarIface().showMessage("Filling table {} %".format(percent))
+                QtWidgets.QApplication.processEvents()
         layer_dict["Point"].addFeatures(feature_list)
         layer_dict["Point"].commitChanges()
     elif geom_data_type == "geo_shape":
@@ -186,8 +193,10 @@ def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_
                     feature = create_feature(metadata, dataset, geom_data_type, geom_data_name, line)
                     layer_dict[json_geometry].addFeatures([feature])
                     layer_dict[json_geometry].commitChanges()
+
                     percent = int(line / float(len(dataset['results']) - 1) * 100)
-                    iface.mainWindow().statusBar().showMessage("Processed {} %".format(percent))
+                    iface.mainWindow().statusBar().showMessage("Filling table {} %".format(percent))
+                    QtWidgets.QApplication.processEvents()
                 else:
                     QtWidgets.QMessageBox.information(None, "ERROR:",
                                                       "This json geometry isn't valid. Valid geometries are "
