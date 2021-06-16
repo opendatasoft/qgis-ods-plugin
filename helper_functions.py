@@ -13,6 +13,14 @@ ACCEPTED_TYPE = {"geo_point_2d", "geo_shape"}
 # TODO : select il faut boucler sur metadata pour créer un dict (name type)
 #  et créer les attributs à partir de ligne 1 du dataset
 
+def create_name_type_dict(dataset_line, metadata):
+    name_type_dict = {}
+    for name in dataset_line.keys():
+        for field in metadata['results'][0]['fields']:
+            if name == field['name']:
+                name_type_dict[name] = {'json_type': field['type'], 'is_multivalued': "multivalued" in field['annotations']}
+    return name_type_dict
+
 
 def import_dataset(iface, domain_url, dataset_id, params, number_of_lines):
     import requests
@@ -90,20 +98,20 @@ def possible_geom_columns_from_metadata(metadata):
     return geom_column_names
 
 
-def create_attributes(metadata):
+def create_attributes(name_type_dict):
     from qgis.PyQt.QtCore import QVariant
     from qgis.core import QgsField
 
     attribute_list = []
-    for field in metadata['results'][0]['fields']:
-        if field['type'] not in ACCEPTED_TYPE:
-            if "multivalued" in field['annotations']:
-                if field['type'] == "text":
-                    attribute_list.append(QgsField(field['name'], QVariant.StringList))
+    for column_name in name_type_dict.keys():
+        if name_type_dict[column_name]['json_type'] not in ACCEPTED_TYPE:
+            if name_type_dict[column_name]['is_multivalued']:
+                if name_type_dict[column_name]['json_type'] == "text":
+                    attribute_list.append(QgsField(column_name, QVariant.StringList))
                 else:
-                    attribute_list.append(QgsField(field['name'], QVariant.List))
+                    attribute_list.append(QgsField(column_name, QVariant.List))
             else:
-                attribute_list.append(QgsField(field['name'], JSON_TO_QGIS_TYPES[field["type"]]))
+                attribute_list.append(QgsField(column_name, JSON_TO_QGIS_TYPES[name_type_dict[column_name]['json_type']]))
     return attribute_list
 
 
@@ -123,7 +131,7 @@ def create_layer(json_geometry, dataset_id, attribute_list):
     return layer
 
 
-def create_feature(metadata, dataset, geom_data_type, geom_data_name, line):
+def create_feature(name_type_dict, dataset, geom_data_type, geom_data_name, line):
     from qgis.core import (QgsFeature, QgsGeometry, QgsPointXY)
     from osgeo import ogr
     import json
@@ -141,9 +149,9 @@ def create_feature(metadata, dataset, geom_data_type, geom_data_name, line):
         feature.setGeometry(QgsGeometry.fromWkt(geom.ExportToWkt()))
 
     feature_values = []
-    for field in metadata["results"][0]["fields"]:
-        if field["type"] not in ACCEPTED_TYPE:
-            feature_values.append(dataset['results'][line][field['name']])
+    for column_name in name_type_dict.keys():
+        if name_type_dict[column_name]['json_type'] not in ACCEPTED_TYPE:
+            feature_values.append(dataset['results'][line][column_name])
     feature.setAttributes(feature_values)
     return feature
 
@@ -155,12 +163,10 @@ def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_
         return
     dataset = import_dataset(iface, domain, dataset_id, params, number_of_lines)
 
-    geom_data_type = ""
-    for column in metadata["results"][0]["fields"]:
-        if column["name"] == geom_data_name:
-            geom_data_type = column["type"]
+    name_type_dict = create_name_type_dict(dataset['results'][0], metadata)
+    geom_data_type = name_type_dict[geom_data_name]['json_type']
 
-    attribute_list = create_attributes(metadata)
+    attribute_list = create_attributes(name_type_dict)
     layer_dict = {}
 
     if geom_data_type == "geo_point_2d":
@@ -170,7 +176,7 @@ def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_
         feature_list = []
         for line in range(len(dataset['results'])):
             if dataset["results"][line][geom_data_name] is not None:
-                feature = create_feature(metadata, dataset, geom_data_type, geom_data_name, line)
+                feature = create_feature(name_type_dict, dataset, geom_data_type, geom_data_name, line)
                 feature_list.append(feature)
 
                 percent = int(line / float(len(dataset['results'])-1) * 100)
@@ -190,7 +196,7 @@ def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_
                         layer = create_layer(json_geometry, dataset_id, attribute_list)
                         layer_dict[json_geometry] = layer
                     layer_dict[json_geometry].startEditing()
-                    feature = create_feature(metadata, dataset, geom_data_type, geom_data_name, line)
+                    feature = create_feature(name_type_dict, dataset, geom_data_type, geom_data_name, line)
                     layer_dict[json_geometry].addFeatures([feature])
                     layer_dict[json_geometry].commitChanges()
 
