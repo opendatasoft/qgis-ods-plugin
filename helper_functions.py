@@ -10,15 +10,13 @@ ACCEPTED_GEOMETRY = {"MultiPoint", "MultiLineString", "MultiPolygon", "Point", "
 ACCEPTED_TYPE = {"geo_point_2d", "geo_shape"}
 
 
-# TODO : select il faut boucler sur metadata pour créer un dict (name type)
-#  et créer les attributs à partir de ligne 1 du dataset
-
 def create_name_type_dict(dataset_line, metadata):
     name_type_dict = {}
     for name in dataset_line.keys():
         for field in metadata['results'][0]['fields']:
             if name == field['name']:
-                name_type_dict[name] = {'json_type': field['type'], 'is_multivalued': "multivalued" in field['annotations']}
+                name_type_dict[name] = {'json_type': field['type'],
+                                        'is_multivalued': "multivalued" in field['annotations']}
     return name_type_dict
 
 
@@ -42,8 +40,7 @@ def import_dataset(iface, domain_url, dataset_id, params, number_of_lines):
     params['offset'] = V2_API_CHUNK_SIZE
     while params['offset'] <= total_count and params['offset'] < V2_QUERY_SIZE_LIMIT - V2_API_CHUNK_SIZE \
             and number_of_lines_left >= 0:
-        query = requests.get(
-            "https://{}/api/v2/catalog/datasets/{}/query".format(domain_url, dataset_id), params)
+        query = requests.get("https://{}/api/v2/catalog/datasets/{}/query".format(domain_url, dataset_id), params)
         json_dataset['results'] += query.json()['results']
         params['offset'] += V2_API_CHUNK_SIZE
         number_of_lines_left -= V2_API_CHUNK_SIZE
@@ -111,7 +108,8 @@ def create_attributes(name_type_dict):
                 else:
                     attribute_list.append(QgsField(column_name, QVariant.List))
             else:
-                attribute_list.append(QgsField(column_name, JSON_TO_QGIS_TYPES[name_type_dict[column_name]['json_type']]))
+                attribute_list.append(
+                    QgsField(column_name, JSON_TO_QGIS_TYPES[name_type_dict[column_name]['json_type']]))
     return attribute_list
 
 
@@ -158,11 +156,24 @@ def create_feature(name_type_dict, dataset, geom_data_type, geom_data_name, line
 
 def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_lines=V2_QUERY_SIZE_LIMIT):
     metadata = import_dataset_metadata(domain, dataset_id)
+
+    # Checks if select is different from select field literal (to remove when types added to dataset)
+    name_list = []
+    for field in metadata['results'][0]['fields']:
+        name_list.append(field['name'])
+    if 'select' in params.keys():
+        for selected_data in params['select'].replace(", ", ",").split(","):
+            if selected_data not in name_list:
+                QtWidgets.QMessageBox.information(None, "ERROR:", "Unauthorized select statement : "
+                                                                  "only select field literal is permitted "
+                                                                  "or name not in dataset.")
+                return
+
     if number_of_lines <= 0:
         QtWidgets.QMessageBox.information(None, "ERROR:", "Number of lines has to be a strictly positive int.")
         return
-    dataset = import_dataset(iface, domain, dataset_id, params, number_of_lines)
 
+    dataset = import_dataset(iface, domain, dataset_id, params, number_of_lines)
     name_type_dict = create_name_type_dict(dataset['results'][0], metadata)
     geom_data_type = name_type_dict[geom_data_name]['json_type']
 
@@ -179,7 +190,7 @@ def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_
                 feature = create_feature(name_type_dict, dataset, geom_data_type, geom_data_name, line)
                 feature_list.append(feature)
 
-                percent = int(line / float(len(dataset['results'])-1) * 100)
+                percent = int(line / float(len(dataset['results']) - 1) * 100)
                 iface.statusBarIface().showMessage("Filling table {} %".format(percent))
                 QtWidgets.QApplication.processEvents()
         layer_dict["Point"].addFeatures(feature_list)
