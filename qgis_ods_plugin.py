@@ -30,4 +30,3 @@ class QgisOdsPlugin:
 
             # TODO : deal with conversion from type to qgsField : do default string and if date works, date ?
             #  but how ? Hoooooooooooow ?
-

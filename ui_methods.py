@@ -51,11 +51,16 @@ class InputDialog(QtWidgets.QDialog):
     def params(self):
         params = {}
         if self.selectInput.text():
+            print("bababooey")
             select_input = self.selectInput.text()
             if select_input.startswith("select="):
                 params['select'] = select_input[len("select="):]
             else:
                 params['select'] = select_input
+            if self.geomColumnListComboBox.currentText() not in select_input:
+                params['select'] += ", " + self.geomColumnListComboBox.currentText()
+            if '*' in select_input:
+                params.pop('select', None)
 
         if self.whereInput.text():
             where_input = self.whereInput.text()
