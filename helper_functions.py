@@ -51,7 +51,7 @@ def import_dataset_list(domain_url):
     import requests
     try:
         first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url))
-    except requests.exceptions.ConnectionError:
+    except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
         raise DomainError
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']

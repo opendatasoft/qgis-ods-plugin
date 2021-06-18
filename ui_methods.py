@@ -1,20 +1,22 @@
 import os
 
 from PyQt5 import QtWidgets, uic
+from PyQt5.QtCore import QSettings
 
 from . import helper_functions
 
 
 class InputDialog(QtWidgets.QDialog):
-    def __init__(self):
+    def __init__(self, iface):
         super(InputDialog, self).__init__()
         ui_dir = os.path.dirname(os.path.abspath(__file__))
         ui_path = os.path.join(ui_dir, 'plugin_dialog.ui')
         uic.loadUi(ui_path, self)
+        self.iface = iface
 
         self.updateListButton.clicked.connect(self.updateListButtonPressed)
         self.datasetListComboBox.currentTextChanged.connect(self.updateGeomColumnListComboBox)
-
+        self.dialogButtonBox.accepted.connect(self.importDataset)
         self.show()
 
     def updateListButtonPressed(self):
@@ -70,8 +72,55 @@ class InputDialog(QtWidgets.QDialog):
                 params['order_by'] = order_by_input
         return params
 
-    def push_last_domain(self, domain):
-        self.domainInput.setText(domain)
+    def push_ods_cache(self, ods_cache):
+        self.domainInput.setText(ods_cache['domain'])
+        self.updateListButtonPressed()
+        if 'select' in ods_cache['params'].keys():
+            self.selectInput.setText(ods_cache['params']['select'])
+        if 'where' in ods_cache['params'].keys():
+            self.selectInput.setText(ods_cache['params']['where'])
+        if 'order_by' in ods_cache['params'].keys():
+            self.selectInput.setText(ods_cache['params']['order_by'])
+        self.numberOfLinesInput.setText(str(ods_cache['number_of_lines']))
+
+    def importDataset(self):
+        settings = QSettings()
+        if self.domain() == "" or self.dataset_id() == "" or self.geom_data_name() == "":
+            QtWidgets.QMessageBox.information(None, "ERROR:", "All fields must be filled to import a dataset.")
+            return
+        if self.number_of_lines() == "":
+            number_of_lines = helper_functions.V2_QUERY_SIZE_LIMIT
+        else:
+            try:
+                number_of_lines = int(self.number_of_lines())
+            except ValueError:
+                QtWidgets.QMessageBox.information(None, "ERROR:", "Number of lines has to be an int.")
+                return
+        try:
+            helper_functions.import_to_qgis(self.iface, self.domain(), self.dataset_id(),
+                                            self.geom_data_name(),
+                                            self.params(), number_of_lines)
+            ods_cache = {'domain': self.domain(), 'dataset_id': self.dataset_id(),
+                         'geom_data_name': self.geom_data_name(), 'params': self.params(),
+                         'number_of_lines': number_of_lines}
+            settings.setValue('ods_cache', ods_cache)
+            self.close()
+        except helper_functions.OdsqlError:
+            pass
+        except helper_functions.DatasetError:
+            QtWidgets.QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
+        except helper_functions.DomainError:
+            QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
+        except helper_functions.SelectError:
+            QtWidgets.QMessageBox.information(None, "ERROR:", "Unauthorized select statement : "
+                                                              "only select field literal is permitted "
+                                                              "or name not in dataset.")
+        except helper_functions.NumberOfLinesError:
+            QtWidgets.QMessageBox.information(None, "ERROR:", "Number of lines has to be a strictly positive int.")
+        except helper_functions.GeometryError:
+            QtWidgets.QMessageBox.information(None, "ERROR:",
+                                              "This json geometry isn't valid. Valid geometries are "
+                                              + ", ".join(helper_functions.ACCEPTED_GEOMETRY) + ".")
 
 
 def remove_http(url):
