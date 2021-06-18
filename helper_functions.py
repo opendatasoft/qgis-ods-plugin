@@ -21,11 +21,10 @@ def import_dataset(iface, domain_url, dataset_id, params, number_of_lines):
     first_query = requests.get(
         "https://{}/api/v2/catalog/datasets/{}/query".format(domain_url, dataset_id), params)
     if first_query.status_code == 404:
-        QtWidgets.QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
-        return
+        raise DatasetError
     elif first_query.status_code == 400:
-        QtWidgets.QMessageBox.information(None, "ERROR:", "One of your odsql statement is malformed.")
-        return
+        QtWidgets.QMessageBox.information(None, "ERROR:", first_query.json()['message'])
+        raise OdsqlError
     number_of_lines_left -= V2_API_CHUNK_SIZE
 
     params['limit'] = min(V2_API_CHUNK_SIZE, number_of_lines_left)
@@ -51,11 +50,9 @@ def import_dataset_list(domain_url):
     params = {'limit': V2_API_CHUNK_SIZE}
     import requests
     try:
-        first_query = requests.get(
-            "https://{}/api/v2/catalog/query".format(domain_url))
+        first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url))
     except requests.exceptions.ConnectionError:
-        QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
-        return
+        raise DomainError
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']
     params['offset'] = V2_API_CHUNK_SIZE
@@ -74,11 +71,12 @@ def datasets_to_dataset_id_list(json_dataset):
 
 def import_dataset_metadata(domain_url, dataset_id):
     import requests
-    query = requests.get(
-        "https://{}/api/v2/catalog/query?where=datasetid:'{}'".format(domain_url, dataset_id))
-    if query.status_code == 404:
-        QtWidgets.QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
-        return
+    try:
+        query = requests.get("https://{}/api/v2/catalog/query?where=datasetid:'{}'".format(domain_url, dataset_id))
+    except requests.exceptions.ConnectionError:
+        raise DomainError
+    if query.status_code == 404 or query.json()['total_count'] == 0:
+        raise DatasetError
     return query.json()
 
 
@@ -148,11 +146,12 @@ def create_feature(metadata, dataset, geom_data_type, geom_data_name, line):
     return feature
 
 
-def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_lines=V2_QUERY_SIZE_LIMIT):
+def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_lines):
     metadata = import_dataset_metadata(domain, dataset_id)
+
     if number_of_lines <= 0:
-        QtWidgets.QMessageBox.information(None, "ERROR:", "Number of lines has to be a strictly positive int.")
-        return
+        raise NumberOfLinesError
+
     dataset = import_dataset(iface, domain, dataset_id, params, number_of_lines)
 
     geom_data_type = ""
@@ -198,9 +197,7 @@ def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_
                     iface.mainWindow().statusBar().showMessage("Filling table {} %".format(percent))
                     QtWidgets.QApplication.processEvents()
                 else:
-                    QtWidgets.QMessageBox.information(None, "ERROR:",
-                                                      "This json geometry isn't valid. Valid geometries are "
-                                                      + ", ".join(ACCEPTED_GEOMETRY) + ".")
+                    raise GeometryError
 
     for layer in layer_dict.values():
         layer.updateExtents()
@@ -213,3 +210,27 @@ def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_
     for layer in layer_dict.values():
         canvas.setExtent(layer.extent())
         canvas.setLayers([layer])
+
+
+class DomainError(Exception):
+    pass
+
+
+class OdsqlError(Exception):
+    pass
+
+
+class NumberOfLinesError(Exception):
+    pass
+
+
+class SelectError(Exception):
+    pass
+
+
+class DatasetError(Exception):
+    pass
+
+
+class GeometryError(Exception):
+    pass

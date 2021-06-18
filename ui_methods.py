@@ -19,14 +19,19 @@ class InputDialog(QtWidgets.QDialog):
 
     def updateListButtonPressed(self):
         self.datasetListComboBox.clear()
-        self.datasetListComboBox.addItems(
-            helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(remove_http(self.domainInput.text()))))
+        try:
+            dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
+                remove_http(self.domainInput.text())))
+            self.datasetListComboBox.addItems(dataset_id_list)
+        except helper_functions.DomainError:
+            QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
 
     def updateGeomColumnListComboBox(self):
-        self.geomColumnListComboBox.clear()
-        self.geomColumnListComboBox.addItems(
-            helper_functions.possible_geom_columns_from_metadata(helper_functions.import_dataset_metadata(
-                remove_http(self.domainInput.text()), self.datasetListComboBox.currentText())))
+        if self.datasetListComboBox.currentText():
+            self.geomColumnListComboBox.clear()
+            self.geomColumnListComboBox.addItems(
+                helper_functions.possible_geom_columns_from_metadata(helper_functions.import_dataset_metadata(
+                    remove_http(self.domainInput.text()), self.datasetListComboBox.currentText())))
 
     def domain(self):
         url = self.domainInput.text()
@@ -45,21 +50,21 @@ class InputDialog(QtWidgets.QDialog):
         params = {}
         if self.selectInput.text():
             select_input = self.selectInput.text()
-            if "select=" in select_input:
+            if select_input.startswith("select="):
                 params['select'] = select_input[len("select="):]
             else:
                 params['select'] = select_input
 
         if self.whereInput.text():
             where_input = self.whereInput.text()
-            if "where=" in where_input:
+            if where_input.startswith("where="):
                 params['where'] = where_input[len("where="):]
             else:
                 params['where'] = where_input
 
         if self.orderByInput.text():
             order_by_input = self.orderByInput.text()
-            if "order_by=" in order_by_input:
+            if order_by_input.startswith("order_by="):
                 params['order_by'] = order_by_input[len("order_by="):]
             else:
                 params['order_by'] = order_by_input
@@ -70,8 +75,8 @@ class InputDialog(QtWidgets.QDialog):
 
 
 def remove_http(url):
-    if "https://" in url:
+    if url.startswith("https://"):
         return url[len("https://"):]
-    elif "http://" in url:
+    elif url.startswith("http://"):
         return url[len("http://"):]
     return url

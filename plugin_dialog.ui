@@ -101,13 +101,25 @@ to update the possible datasets.</string>
     <widget class="QComboBox" name="datasetListComboBox"/>
    </item>
    <item row="9" column="1" colspan="2">
-    <widget class="QLineEdit" name="selectInput"/>
+    <widget class="QLineEdit" name="selectInput">
+     <property name="placeholderText">
+      <string>columnA,columnB</string>
+     </property>
+    </widget>
    </item>
    <item row="11" column="1" colspan="2">
-    <widget class="QLineEdit" name="whereInput"/>
+    <widget class="QLineEdit" name="whereInput">
+     <property name="placeholderText">
+      <string>columnA:valueA</string>
+     </property>
+    </widget>
    </item>
    <item row="13" column="1" colspan="2">
-    <widget class="QLineEdit" name="orderByInput"/>
+    <widget class="QLineEdit" name="orderByInput">
+     <property name="placeholderText">
+      <string>columnA</string>
+     </property>
+    </widget>
    </item>
    <item row="15" column="1" colspan="2">
     <widget class="QLineEdit" name="numberOfLinesInput"/>
