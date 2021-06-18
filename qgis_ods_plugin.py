@@ -57,6 +57,8 @@ class QgisOdsPlugin:
                 QtWidgets.QMessageBox.information(None, "ERROR:",
                                                   "This json geometry isn't valid. Valid geometries are "
                                                   + ", ".join(helper_functions.ACCEPTED_GEOMETRY) + ".")
+
+
             # TODO : deal with conversion from type to qgsField : do default string and if date works, date ?
             #  but how ? Hoooooooooooow ?
 
