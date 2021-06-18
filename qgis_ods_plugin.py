@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import *
 
-from . import helper_functions, ui_methods
+from . import ui_methods
 
 
 class QgisOdsPlugin:
@@ -30,3 +30,4 @@ class QgisOdsPlugin:
 
             # TODO : deal with conversion from type to qgsField : do default string and if date works, date ?
             #  but how ? Hoooooooooooow ?
+            # TODO : add auth to get private dataset

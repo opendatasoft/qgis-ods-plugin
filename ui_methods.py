@@ -51,7 +51,6 @@ class InputDialog(QtWidgets.QDialog):
     def params(self):
         params = {}
         if self.selectInput.text():
-            print("bababooey")
             select_input = self.selectInput.text()
             if select_input.startswith("select="):
                 params['select'] = select_input[len("select="):]
@@ -105,9 +104,7 @@ class InputDialog(QtWidgets.QDialog):
             helper_functions.import_to_qgis(self.iface, self.domain(), self.dataset_id(),
                                             self.geom_data_name(),
                                             self.params(), number_of_lines)
-            ods_cache = {'domain': self.domain(), 'dataset_id': self.dataset_id(),
-                         'geom_data_name': self.geom_data_name(), 'params': self.params(),
-                         'number_of_lines': number_of_lines}
+            ods_cache = {'domain': self.domain(), 'params': self.params(), 'number_of_lines': number_of_lines}
             settings.setValue('ods_cache', ods_cache)
             self.close()
         except helper_functions.OdsqlError:
