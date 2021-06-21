@@ -15,7 +15,8 @@ class InputDialog(QtWidgets.QDialog):
         self.iface = iface
 
         self.updateListButton.clicked.connect(self.updateListButtonPressed)
-        self.datasetListComboBox.currentTextChanged.connect(self.updateGeomColumnListComboBox)
+        self.datasetListComboBox.setEditable(True)
+        self.datasetListComboBox.currentIndexChanged.connect(self.updateGeomColumnListComboBox)
         self.dialogButtonBox.accepted.connect(self.importDataset)
         self.show()
 
