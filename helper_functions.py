@@ -55,15 +55,14 @@ def import_dataset_list(domain_url):
     params = {'limit': V2_API_CHUNK_SIZE}
     import requests
     try:
-        first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url))
+        first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
         raise DomainError
     json_dataset = first_query.json()
     total_count = json_dataset['total_count']
     params['offset'] = V2_API_CHUNK_SIZE
     while params['offset'] <= total_count and params['offset'] < V2_QUERY_SIZE_LIMIT - V2_API_CHUNK_SIZE:
-        query = requests.get(
-            "https://{}/api/v2/catalog/query".format(domain_url))
+        query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
         json_dataset['results'] += query.json()['results']
         params['offset'] += V2_API_CHUNK_SIZE
     return json_dataset

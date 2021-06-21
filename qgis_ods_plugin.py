@@ -33,4 +33,3 @@ class QgisOdsPlugin:
             #  but how ? Hoooooooooooow ?
             # TODO : add auth to get private dataset
             # TODO : import dataset list => all datasets
-            # TODO : cache for comboBox
