@@ -12,7 +12,8 @@ class QgisOdsPlugin:
         self.iface = iface
 
     def initGui(self):
-        self.action = QtWidgets.QAction(QIcon(os.path.join(os.path.dirname(__file__), "icon.png")), "ODS plugin", self.iface.mainWindow())
+        self.action = QtWidgets.QAction(QIcon(os.path.join(os.path.dirname(__file__), "icon.png")), "ODS plugin",
+                                        self.iface.mainWindow())
         self.action.triggered.connect(self.run)
         self.iface.addToolBarIcon(self.action)
 
@@ -31,3 +32,5 @@ class QgisOdsPlugin:
             # TODO : deal with conversion from type to qgsField : do default string and if date works, date ?
             #  but how ? Hoooooooooooow ?
             # TODO : add auth to get private dataset
+            # TODO : import dataset list => all datasets
+            # TODO : cache for comboBox

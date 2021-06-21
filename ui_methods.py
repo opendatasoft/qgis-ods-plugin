@@ -78,13 +78,15 @@ class InputDialog(QtWidgets.QDialog):
 
     def push_ods_cache(self, ods_cache):
         self.domainInput.setText(ods_cache['domain'])
-        self.updateListButtonPressed()
+        self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
+        self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
+        self.geomColumnListComboBox.setCurrentIndex(ods_cache['geom_column_index'])
         if 'select' in ods_cache['params'].keys():
             self.selectInput.setText(ods_cache['params']['select'])
         if 'where' in ods_cache['params'].keys():
-            self.selectInput.setText(ods_cache['params']['where'])
+            self.whereInput.setText(ods_cache['params']['where'])
         if 'order_by' in ods_cache['params'].keys():
-            self.selectInput.setText(ods_cache['params']['order_by'])
+            self.orderByInput.setText(ods_cache['params']['order_by'])
         self.numberOfLinesInput.setText(str(ods_cache['number_of_lines']))
 
     def importDataset(self):
@@ -104,7 +106,12 @@ class InputDialog(QtWidgets.QDialog):
             helper_functions.import_to_qgis(self.iface, self.domain(), self.dataset_id(),
                                             self.geom_data_name(),
                                             self.params(), number_of_lines)
-            ods_cache = {'domain': self.domain(), 'params': self.params(), 'number_of_lines': number_of_lines}
+            all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
+            dataset_index = self.datasetListComboBox.currentIndex()
+            geom_column_index = self.geomColumnListComboBox.currentIndex()
+            ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
+                         'geom_column_index': geom_column_index, 'params': self.params(),
+                         'number_of_lines': number_of_lines}
             settings.setValue('ods_cache', ods_cache)
             self.close()
         except helper_functions.OdsqlError:

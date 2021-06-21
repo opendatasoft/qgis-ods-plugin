@@ -155,9 +155,6 @@ def create_feature(name_type_dict, dataset, geom_data_type, geom_data_name, line
 def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_lines):
     metadata = import_dataset_metadata(domain, dataset_id)
 
-    if number_of_lines <= 0:
-        raise NumberOfLinesError
-
     # Checks if select is different from select field literal (to remove when types added to dataset)
     name_list = []
     for field in metadata['results'][0]['fields']:
@@ -166,6 +163,9 @@ def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_
         for selected_data in params['select'].replace(", ", ",").split(","):
             if selected_data not in name_list:
                 raise SelectError
+
+    if number_of_lines <= 0:
+        raise NumberOfLinesError
 
     dataset = import_dataset(iface, domain, dataset_id, params, number_of_lines)
     name_type_dict = create_name_type_dict(dataset['results'][0], metadata)
