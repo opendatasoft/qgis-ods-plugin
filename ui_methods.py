@@ -14,6 +14,10 @@ class InputDialog(QtWidgets.QDialog):
         uic.loadUi(ui_path, self)
         self.iface = iface
 
+        for button in self.dialogButtonBox.buttons():
+            button.setDefault(False)
+        self.queryButton.toggled.connect(self.endpoint)
+        self.exportsButton.toggled.connect(self.endpoint)
         self.updateListButton.clicked.connect(self.updateListButtonPressed)
         self.datasetListComboBox.setEditable(True)
         self.datasetListComboBox.currentIndexChanged.connect(self.updateGeomColumnListComboBox)
@@ -32,9 +36,47 @@ class InputDialog(QtWidgets.QDialog):
     def updateGeomColumnListComboBox(self):
         if self.datasetListComboBox.currentText():
             self.geomColumnListComboBox.clear()
-            self.geomColumnListComboBox.addItems(
-                helper_functions.possible_geom_columns_from_metadata(helper_functions.import_dataset_metadata(
-                    remove_http(self.domainInput.text()), self.datasetListComboBox.currentText())))
+            if self.queryButton.isChecked():
+                try:
+                    geom_column_list = helper_functions.possible_geom_columns_from_metadata(helper_functions.
+                        import_dataset_metadata(
+                        remove_http(self.domainInput.text()), self.datasetListComboBox.currentText()))
+                    self.geomColumnListComboBox.addItems(geom_column_list)
+                except helper_functions.DatasetError:
+                    QtWidgets.QMessageBox.information(None, "ERROR:",
+                                                      "The dataset you want does not exist on this domain.")
+            elif self.exportsButton.isChecked():
+                try:
+                    geom_column_list = helper_functions.geojson_geom_column(
+                        helper_functions.import_dataset_metadata(remove_http(self.domainInput.text()),
+                                                                 self.datasetListComboBox.currentText()))
+                    self.geomColumnListComboBox.addItems(geom_column_list)
+                except helper_functions.DatasetError:
+                    QtWidgets.QMessageBox.information(None, "ERROR:",
+                                                      "The dataset you want does not exist on this domain.")
+
+    def endpoint(self):
+        endpoint = 'query'
+        if self.queryButton.isChecked():
+            endpoint = 'query'
+            self.ui_to_query()
+            self.updateGeomColumnListComboBox()
+        elif self.exportsButton.isChecked():
+            endpoint = 'exports'
+            self.ui_to_exports()
+            self.updateGeomColumnListComboBox()
+        return endpoint
+
+    def ui_to_query(self):
+        self.geometryLabel.setText("Column containing the geometry :")
+        self.numberOfLinesLabel.setText("Number of lines you want (default all lines,\nor 10000 if dataset is bigger "
+                                        "than that) :")
+        self.geomColumnListComboBox.setEnabled(True)
+
+    def ui_to_exports(self):
+        self.geometryLabel.setText("Geojson determines geometry by itself")
+        self.numberOfLinesLabel.setText("Number of lines you want :")
+        self.geomColumnListComboBox.setDisabled(True)
 
     def domain(self):
         url = self.domainInput.text()
@@ -78,6 +120,10 @@ class InputDialog(QtWidgets.QDialog):
         return params
 
     def push_ods_cache(self, ods_cache):
+        if ods_cache['endpoint'] == 'query':
+            self.queryButton.setChecked(True)
+        elif ods_cache['endpoint'] == 'exports':
+            self.exportsButton.setChecked(True)
         self.domainInput.setText(ods_cache['domain'])
         self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
         self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
@@ -95,42 +141,63 @@ class InputDialog(QtWidgets.QDialog):
         if self.domain() == "" or self.dataset_id() == "" or self.geom_data_name() == "":
             QtWidgets.QMessageBox.information(None, "ERROR:", "All fields must be filled to import a dataset.")
             return
-        if self.number_of_lines() == "":
-            number_of_lines = helper_functions.V2_QUERY_SIZE_LIMIT
-        else:
+        if self.endpoint() == 'query':
+            if self.number_of_lines() == "":
+                number_of_lines = helper_functions.V2_QUERY_SIZE_LIMIT
+            else:
+                try:
+                    number_of_lines = int(self.number_of_lines())
+                except ValueError:
+                    QtWidgets.QMessageBox.information(None, "ERROR:", "Number of lines has to be an int.")
+                    return
             try:
-                number_of_lines = int(self.number_of_lines())
-            except ValueError:
-                QtWidgets.QMessageBox.information(None, "ERROR:", "Number of lines has to be an int.")
-                return
-        try:
-            helper_functions.import_to_qgis(self.iface, self.domain(), self.dataset_id(),
-                                            self.geom_data_name(),
-                                            self.params(), number_of_lines)
-            all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
-            dataset_index = self.datasetListComboBox.currentIndex()
-            geom_column_index = self.geomColumnListComboBox.currentIndex()
-            ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
-                         'geom_column_index': geom_column_index, 'params': self.params(),
-                         'number_of_lines': number_of_lines}
-            settings.setValue('ods_cache', ods_cache)
-            self.close()
-        except helper_functions.OdsqlError:
-            pass
-        except helper_functions.DatasetError:
-            QtWidgets.QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
-        except helper_functions.DomainError:
-            QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
-        except helper_functions.SelectError:
-            QtWidgets.QMessageBox.information(None, "ERROR:", "Unauthorized select statement : "
-                                                              "only select field literal is permitted "
-                                                              "or name not in dataset.")
-        except helper_functions.NumberOfLinesError:
-            QtWidgets.QMessageBox.information(None, "ERROR:", "Number of lines has to be a strictly positive int.")
-        except helper_functions.GeometryError:
-            QtWidgets.QMessageBox.information(None, "ERROR:",
-                                              "This json geometry isn't valid. Valid geometries are "
-                                              + ", ".join(helper_functions.ACCEPTED_GEOMETRY) + ".")
+                helper_functions.import_to_qgis(self.iface, self.domain(), self.dataset_id(),
+                                                self.geom_data_name(),
+                                                self.params(), number_of_lines)
+                all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
+                dataset_index = self.datasetListComboBox.currentIndex()
+                geom_column_index = self.geomColumnListComboBox.currentIndex()
+                ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
+                             'geom_column_index': geom_column_index, 'params': self.params(),
+                             'number_of_lines': number_of_lines, 'endpoint': 'query'}
+                settings.setValue('ods_cache', ods_cache)
+                self.close()
+            except helper_functions.OdsqlError:
+                pass
+            except helper_functions.DomainError:
+                QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
+            except helper_functions.DatasetError:
+                QtWidgets.QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
+            except helper_functions.SelectError:
+                QtWidgets.QMessageBox.information(None, "ERROR:", "Unauthorized select statement : "
+                                                                  "only select field literal is permitted "
+                                                                  "or name not in dataset.")
+            except helper_functions.NumberOfLinesError:
+                QtWidgets.QMessageBox.information(None, "ERROR:", "Number of lines has to be a strictly positive int.")
+            except helper_functions.GeometryError:
+                QtWidgets.QMessageBox.information(None, "ERROR:",
+                                                  "This json geometry isn't valid. Valid geometries are "
+                                                  + ", ".join(helper_functions.ACCEPTED_GEOMETRY) + ".")
+        else:
+            params = self.params()
+            if self.number_of_lines():
+                params['limit'] = self.number_of_lines()
+            try:
+                helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), params)
+                all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
+                dataset_index = self.datasetListComboBox.currentIndex()
+                geom_column_index = self.geomColumnListComboBox.currentIndex()
+                ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
+                             'geom_column_index': geom_column_index, 'params': self.params(),
+                             'number_of_lines': self.number_of_lines(), 'endpoint': 'exports'}
+                settings.setValue('ods_cache', ods_cache)
+                self.close()
+            except helper_functions.OdsqlError:
+                pass
+            except helper_functions.DomainError:
+                QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
+            except helper_functions.DatasetError:
+                QtWidgets.QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
 
 
 def remove_http(url):
