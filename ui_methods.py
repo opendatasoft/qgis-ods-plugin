@@ -196,6 +196,9 @@ class InputDialog(QtWidgets.QDialog):
                                                   + ", ".join(helper_functions.ACCEPTED_GEOMETRY) + ".")
         else:
             params = self.params()
+            if self.path() == "" or self.file_name() == "":
+                QtWidgets.QMessageBox.information(None, "ERROR:", "Path and file name fields cannot be empty.")
+                return
             if self.number_of_lines():
                 params['limit'] = self.number_of_lines()
             try:
@@ -210,7 +213,6 @@ class InputDialog(QtWidgets.QDialog):
                              'file_name': self.file_name()}
                 settings.setValue('ods_cache', ods_cache)
                 self.close()
-            # TODO : when ui on query, deactivate (remove, not disable) path and file (and geom column)
             except helper_functions.OdsqlError:
                 pass
             except helper_functions.DomainError:
