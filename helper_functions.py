@@ -1,3 +1,5 @@
+import copy
+
 import requests
 from PyQt5 import QtWidgets
 from qgis.PyQt.QtCore import QVariant
@@ -241,7 +243,11 @@ def geojson_geom_column(metadata):
 def import_to_qgis_geojson(domain, dataset_id, params):
     from qgis.core import QgsProject, QgsVectorLayer
     try:
-        test_query = requests.get("https://{}/api/v2/catalog/datasets/{}/query".format(domain, dataset_id), params)
+        params_no_limit = copy.copy(params)
+        if 'limit' in params_no_limit.keys():
+            params_no_limit.pop('limit')
+        test_query = requests.get("https://{}/api/v2/catalog/datasets/{}/query".format(domain, dataset_id),
+                                  params_no_limit)
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
         raise DomainError
     if test_query.status_code == 404:
@@ -249,6 +255,14 @@ def import_to_qgis_geojson(domain, dataset_id, params):
     if test_query.status_code == 400:
         QtWidgets.QMessageBox.information(None, "ERROR:", test_query.json()['message'])
         raise OdsqlError
+
+    if 'limit' in params:
+        try:
+            limit = int(params['limit'])
+        except ValueError:
+            raise NumberOfLinesError
+        if limit < 0:
+            raise NumberOfLinesError
 
     url = "https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id)
     if params:

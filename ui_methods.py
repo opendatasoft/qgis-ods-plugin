@@ -36,24 +36,19 @@ class InputDialog(QtWidgets.QDialog):
     def updateGeomColumnListComboBox(self):
         if self.datasetListComboBox.currentText():
             self.geomColumnListComboBox.clear()
-            if self.queryButton.isChecked():
-                try:
-                    geom_column_list = helper_functions.possible_geom_columns_from_metadata(helper_functions.
-                        import_dataset_metadata(
-                        remove_http(self.domainInput.text()), self.datasetListComboBox.currentText()))
-                    self.geomColumnListComboBox.addItems(geom_column_list)
-                except helper_functions.DatasetError:
-                    QtWidgets.QMessageBox.information(None, "ERROR:",
-                                                      "The dataset you want does not exist on this domain.")
-            elif self.exportsButton.isChecked():
-                try:
+            try:
+                if self.queryButton.isChecked():
+                    geom_column_list = helper_functions.possible_geom_columns_from_metadata(
+                        helper_functions.import_dataset_metadata(remove_http(self.domainInput.text()),
+                                                                 self.datasetListComboBox.currentText()))
+                else:
                     geom_column_list = helper_functions.geojson_geom_column(
                         helper_functions.import_dataset_metadata(remove_http(self.domainInput.text()),
                                                                  self.datasetListComboBox.currentText()))
-                    self.geomColumnListComboBox.addItems(geom_column_list)
-                except helper_functions.DatasetError:
-                    QtWidgets.QMessageBox.information(None, "ERROR:",
-                                                      "The dataset you want does not exist on this domain.")
+                self.geomColumnListComboBox.addItems(geom_column_list)
+            except helper_functions.DatasetError:
+                QtWidgets.QMessageBox.information(None, "ERROR:",
+                                                  "The dataset you want does not exist on this domain.")
 
     def endpoint(self):
         endpoint = 'query'
@@ -198,6 +193,9 @@ class InputDialog(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
             except helper_functions.DatasetError:
                 QtWidgets.QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
+            except helper_functions.NumberOfLinesError:
+                QtWidgets.QMessageBox.information(None, "ERROR:", "Limit has to be a strictly positive int.")
+        # TODO : Downloaded three times ? Very very weird
 
 
 def remove_http(url):
