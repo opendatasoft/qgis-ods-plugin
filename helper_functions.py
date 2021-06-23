@@ -1,4 +1,5 @@
 import copy
+import json
 
 import requests
 from PyQt5 import QtWidgets
@@ -240,7 +241,7 @@ def geojson_geom_column(metadata):
     return geom_column_names
 
 
-def import_to_qgis_geojson(domain, dataset_id, params):
+def import_to_qgis_geojson(domain, dataset_id, params, path, file_name):
     from qgis.core import QgsProject, QgsVectorLayer
     try:
         params_no_limit = copy.copy(params)
@@ -264,12 +265,15 @@ def import_to_qgis_geojson(domain, dataset_id, params):
         if limit < 0:
             raise NumberOfLinesError
 
-    url = "https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id)
-    if params:
-        url += '?'
-        for key in params.keys():
-            url += key + '=' + params[key] + '&'
-    vector_layer = QgsVectorLayer(url, dataset_id, "ogr")
+    exports = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id), params)
+    geojson_data = exports.json()
+    full_path = path + '/' + file_name + '.geojson'
+    try:
+        with open(full_path, 'w') as f:
+            json.dump(geojson_data, f)
+    except FileNotFoundError:
+        raise FileNotFoundError
+    vector_layer = QgsVectorLayer(full_path, dataset_id, "ogr")
     QgsProject.instance().addMapLayer(vector_layer)
 
 
