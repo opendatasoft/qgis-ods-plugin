@@ -7,46 +7,35 @@
     <x>0</x>
     <y>0</y>
     <width>687</width>
-    <height>357</height>
+    <height>397</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Import an ODS dataset</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="7" column="1" colspan="2">
-    <widget class="QComboBox" name="geomColumnListComboBox"/>
-   </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="geometryLabel">
-     <property name="text">
-      <string>Column containing the geometry :</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="domainLabel">
-     <property name="text">
-      <string>Choose a domain name, then click on the button 
-to update the possible datasets.</string>
-     </property>
-    </widget>
-   </item>
-   <item row="11" column="0">
+   <item row="14" column="0">
     <widget class="QLabel" name="whereLabel">
      <property name="text">
       <string>Add a where statement :</string>
      </property>
     </widget>
    </item>
-   <item row="13" column="0">
-    <widget class="QLabel" name="orderByLabel">
+   <item row="6" column="2">
+    <widget class="QPushButton" name="updateListButton">
      <property name="text">
-      <string>Add an order_by statement :</string>
+      <string>Update dataset list</string>
      </property>
     </widget>
    </item>
-   <item row="15" column="0">
+   <item row="12" column="0">
+    <widget class="QLabel" name="selectLabel">
+     <property name="text">
+      <string>Add a select statement :</string>
+     </property>
+    </widget>
+   </item>
+   <item row="18" column="0">
     <widget class="QLabel" name="numberOfLinesLabel">
      <property name="lineWidth">
       <number>1</number>
@@ -56,31 +45,41 @@ to update the possible datasets.</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="2">
-    <widget class="QPushButton" name="updateListButton">
-     <property name="text">
-      <string>Update dataset list</string>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="0">
-    <widget class="QLabel" name="selectLabel">
-     <property name="text">
-      <string>Add a select statement :</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="domainInput">
-     <property name="text">
-      <string/>
-     </property>
+   <item row="14" column="1" colspan="2">
+    <widget class="QLineEdit" name="whereInput">
      <property name="placeholderText">
-      <string>domain.opendatasoft.com</string>
+      <string>columnA:valueA</string>
      </property>
     </widget>
    </item>
-   <item row="16" column="1" colspan="2">
+   <item row="0" column="0">
+    <widget class="QRadioButton" name="queryButton">
+     <property name="text">
+      <string>Use query</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
+    </widget>
+   </item>
+   <item row="16" column="0">
+    <widget class="QLabel" name="orderByLabel">
+     <property name="text">
+      <string>Add an order_by statement :</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="geometryLabel">
+     <property name="text">
+      <string>Column containing the geometry :</string>
+     </property>
+    </widget>
+   </item>
+   <item row="19" column="1" colspan="2">
     <widget class="QDialogButtonBox" name="dialogButtonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -90,39 +89,94 @@ to update the possible datasets.</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="datasetLabel">
+   <item row="1" column="0">
+    <widget class="QLabel" name="pathLabel">
      <property name="text">
-      <string>Dataset name :</string>
+      <string>Folder path where to store the dataset :</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="1" colspan="2">
+   <item row="0" column="1">
+    <widget class="QRadioButton" name="exportsButton">
+     <property name="text">
+      <string>Use exports</string>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">buttonGroup</string>
+     </attribute>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="domainLabel">
+     <property name="text">
+      <string>Choose a domain name, then click on the button 
+to update the possible datasets.</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1" colspan="2">
     <widget class="QComboBox" name="datasetListComboBox"/>
    </item>
-   <item row="9" column="1" colspan="2">
+   <item row="12" column="1" colspan="2">
     <widget class="QLineEdit" name="selectInput">
      <property name="placeholderText">
       <string>columnA,columnB</string>
      </property>
     </widget>
    </item>
-   <item row="11" column="1" colspan="2">
-    <widget class="QLineEdit" name="whereInput">
-     <property name="placeholderText">
-      <string>columnA:valueA</string>
-     </property>
-    </widget>
-   </item>
-   <item row="13" column="1" colspan="2">
+   <item row="16" column="1" colspan="2">
     <widget class="QLineEdit" name="orderByInput">
      <property name="placeholderText">
       <string>columnA</string>
      </property>
     </widget>
    </item>
-   <item row="15" column="1" colspan="2">
+   <item row="18" column="1" colspan="2">
     <widget class="QLineEdit" name="numberOfLinesInput"/>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="datasetLabel">
+     <property name="text">
+      <string>Dataset name :</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1" colspan="2">
+    <widget class="QComboBox" name="geomColumnListComboBox"/>
+   </item>
+   <item row="6" column="1">
+    <widget class="QLineEdit" name="domainInput">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>domain.opendatasoft.com</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="fileNameLabel">
+     <property name="text">
+      <string>File name : (always a geojson for now)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <widget class="QLineEdit" name="fileNameInput">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>fileName</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="2">
+    <widget class="QLineEdit" name="pathInput">
+     <property name="placeholderText">
+      <string>My/Favorite/Folder</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -145,4 +199,7 @@ to update the possible datasets.</string>
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="buttonGroup"/>
+ </buttongroups>
 </ui>

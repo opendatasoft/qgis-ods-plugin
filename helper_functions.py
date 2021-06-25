@@ -1,3 +1,6 @@
+import json
+import requests
+
 from PyQt5 import QtWidgets
 from qgis.PyQt.QtCore import QVariant
 
@@ -21,7 +24,6 @@ def create_name_type_dict(dataset_line, metadata):
 
 
 def import_dataset(iface, domain_url, dataset_id, params, number_of_lines):
-    import requests
     number_of_lines_left = number_of_lines
     params['limit'] = min(V2_API_CHUNK_SIZE, number_of_lines_left)
     first_query = requests.get(
@@ -53,9 +55,10 @@ def import_dataset(iface, domain_url, dataset_id, params, number_of_lines):
 
 def import_dataset_list(domain_url):
     params = {'limit': V2_API_CHUNK_SIZE}
-    import requests
     try:
         first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
+        if first_query.status_code == 404:
+            raise DomainError
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
         raise DomainError
     json_dataset = first_query.json()
@@ -75,7 +78,6 @@ def datasets_to_dataset_id_list(json_dataset):
 
 
 def import_dataset_metadata(domain_url, dataset_id):
-    import requests
     try:
         query = requests.get("https://{}/api/v2/catalog/query?where=datasetid:'{}'".format(domain_url, dataset_id))
     except requests.exceptions.ConnectionError:
@@ -222,6 +224,57 @@ def import_to_qgis(iface, domain, dataset_id, geom_data_name, params, number_of_
     for layer in layer_dict.values():
         canvas.setExtent(layer.extent())
         canvas.setLayers([layer])
+
+
+def geojson_geom_column(metadata):
+    geom_column_names = []
+    for field in metadata['results'][0]['fields']:
+        if field['type'] == 'geo_shape':
+            geom_column_names.append(field['name'])
+    if not geom_column_names:
+        for field in metadata['results'][0]['fields']:
+            if field['type'] == 'geo_point_2d':
+                geom_column_names.append(field['name'])
+    if not geom_column_names:
+        QtWidgets.QMessageBox.information(None, "ERROR:", "There's no geojson geometry column in this dataset.")
+    return geom_column_names
+
+
+def import_to_qgis_geojson(domain, dataset_id, params, path, file_name):
+    from qgis.core import QgsProject, QgsVectorLayer
+    try:
+        params_no_limit = dict(params)
+        if 'limit' in params_no_limit.keys():
+            params_no_limit.pop('limit')
+        test_query = requests.get("https://{}/api/v2/catalog/datasets/{}/query".format(domain, dataset_id),
+                                  params_no_limit)
+    except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
+        raise DomainError
+    if test_query.status_code == 404:
+        raise DatasetError
+    if test_query.status_code == 400:
+        QtWidgets.QMessageBox.information(None, "ERROR:", test_query.json()['message'])
+        raise OdsqlError
+
+    if 'limit' in params:
+        try:
+            limit = int(params['limit'])
+        except ValueError:
+            raise NumberOfLinesError
+        if limit < 0:
+            raise NumberOfLinesError
+
+    exports = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id), params)
+    geojson_data = exports.json()
+
+    full_path = path + '/' + file_name + '.geojson'
+    try:
+        with open(full_path, 'w') as f:
+            json.dump(geojson_data, f)
+    except FileNotFoundError:
+        raise FileNotFoundError
+    vector_layer = QgsVectorLayer(full_path, dataset_id, "ogr")
+    QgsProject.instance().addMapLayer(vector_layer)
 
 
 class DomainError(Exception):
