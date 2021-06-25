@@ -1,7 +1,6 @@
-import copy
 import json
-
 import requests
+
 from PyQt5 import QtWidgets
 from qgis.PyQt.QtCore import QVariant
 
@@ -266,7 +265,7 @@ def import_to_qgis_geojson(domain, dataset_id, params, path, file_name):
             raise NumberOfLinesError
 
     exports = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id), params)
-    geojson_data = json.loads(simplify_geometries(exports.json()))
+    geojson_data = exports.json()
 
     full_path = path + '/' + file_name + '.geojson'
     try:
@@ -276,34 +275,6 @@ def import_to_qgis_geojson(domain, dataset_id, params, path, file_name):
         raise FileNotFoundError
     vector_layer = QgsVectorLayer(full_path, dataset_id, "ogr")
     QgsProject.instance().addMapLayer(vector_layer)
-
-
-def simplify_geometries(json_data):
-    simplified_json_data = copy.copy(json_data)
-    old_features = simplified_json_data['features']
-    new_features = []
-
-    for feature in old_features:
-        if feature['geometry']:
-            geometry = feature['geometry']
-            coords = shorten_coord(geometry['coordinates'])
-            geometry['coordinates'] = coords
-            new_features.append(feature)
-
-    simplified_json_data['features'] = new_features
-    return json.dumps(simplified_json_data)
-
-
-def shorten_coord(coordinate, decimal_places=5):
-    if not isinstance(coordinate, list):
-        return round(coordinate, decimal_places)
-
-    shortened_coordinates = []
-    for elem in coordinate:
-        if isinstance(elem, list):
-            elem = shorten_coord(elem, decimal_places)
-        shortened_coordinates.append(shorten_coord(elem, decimal_places))
-    return shortened_coordinates
 
 
 class DomainError(Exception):
