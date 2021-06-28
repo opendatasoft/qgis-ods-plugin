@@ -2,6 +2,7 @@ import os
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QSettings
+from PyQt5.uic.properties import QtGui
 
 from . import helper_functions
 
@@ -22,6 +23,7 @@ class InputDialog(QtWidgets.QDialog):
         self.updateListButton.clicked.connect(self.updateListButtonPressed)
         self.datasetListComboBox.setEditable(True)
         self.datasetListComboBox.currentIndexChanged.connect(self.updateGeomColumnListComboBox)
+        self.datasetListComboBox.currentIndexChanged.connect(self.updateSchemaTable)
         self.dialogButtonBox.accepted.connect(self.importDataset)
         self.show()
 
@@ -51,12 +53,24 @@ class InputDialog(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.information(None, "ERROR:",
                                                   "The dataset you want does not exist on this domain.")
 
+    def updateSchemaTable(self):
+        if self.datasetListComboBox.currentText():
+            self.schemaTableWidget.setColumnCount(0)
+            metadata = helper_functions.import_dataset_metadata(remove_http(self.domainInput.text()),
+                                                                self.datasetListComboBox.currentText())
+            for field in metadata['results'][0]['fields']:
+                column_position = self.schemaTableWidget.columnCount()
+                self.schemaTableWidget.insertColumn(column_position)
+                self.schemaTableWidget.setItem(0, column_position, QtWidgets.QTableWidgetItem(field['name']))
+                self.schemaTableWidget.setItem(1, column_position, QtWidgets.QTableWidgetItem(field['type']))
+
     def getFilePath(self):
         fileDialog = QtWidgets.QFileDialog(self)
         fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         fileName = fileDialog.getSaveFileName(self, "Choose save location", "/Users",
                                               "Geojson Files (*.geojson)")
         self.pathInput.setText(fileName[0])
+
 
     def endpoint(self):
         endpoint = 'query'
@@ -85,7 +99,6 @@ class InputDialog(QtWidgets.QDialog):
         self.geomColumnListComboBox.setVisible(False)
         self.numberOfLinesLabel.setText("Number of lines you want :")
 
-    # TODO : si pas de file donnée, try tempfile
     def path(self):
         return self.pathInput.text()
 
