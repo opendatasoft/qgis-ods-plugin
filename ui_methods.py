@@ -193,13 +193,15 @@ class InputDialog(QtWidgets.QDialog):
                                                   + ", ".join(helper_functions.ACCEPTED_GEOMETRY) + ".")
         else:
             params = self.params()
-            if self.path() == "":
-                QtWidgets.QMessageBox.information(None, "ERROR:", "Path field cannot be empty.")
-                return
+            path = self.path()
+            if path == "":
+                import tempfile
+                temp_folder = tempfile.gettempdir()
+                path = temp_folder + '/tempDataset.geojson'
             if self.number_of_lines():
                 params['limit'] = self.number_of_lines()
             try:
-                helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), params, self.path())
+                helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), params, path)
                 all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
                 dataset_index = self.datasetListComboBox.currentIndex()
                 geom_column_index = self.geomColumnListComboBox.currentIndex()

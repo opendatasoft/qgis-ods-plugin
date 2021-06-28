@@ -282,7 +282,7 @@ def import_to_qgis_geojson(domain, dataset_id, params, path):
 
     exports = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id), params)
     geojson_data = exports.json()
-
+    print(path)
     try:
         with open(path, 'w') as f:
             json.dump(geojson_data, f)

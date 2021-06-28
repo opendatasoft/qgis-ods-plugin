@@ -100,7 +100,7 @@ to update the possible datasets.</string>
    <item row="20" column="2">
     <widget class="QPushButton" name="filePathButton">
      <property name="text">
-      <string>Path to the file</string>
+      <string>Browse</string>
      </property>
     </widget>
    </item>
