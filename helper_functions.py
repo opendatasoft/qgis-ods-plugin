@@ -240,14 +240,30 @@ def geojson_geom_column(metadata):
     return geom_column_names
 
 
-def import_to_qgis_geojson(domain, dataset_id, params, path, file_name):
+def import_to_qgis_geojson(domain, dataset_id, params, path):
+    """progressMessageBar = iface.messageBar().createMessage("HOO HEE HOO HAHA DING DANG WALLA WALLA BING BANG")
+    progress = QtWidgets.QProgressBar()
+    # progress.setMaximum(10)
+    # progress.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+    progressMessageBar.layout().addWidget(progress)
+    iface.messageBar().pushWidget(progressMessageBar)"""
+
+    """import qgis.utils
+    
+    progressMessageBar = qgis.utils.iface.messageBar()
+    progressbar = QtWidgets.QProgressBar()
+    progressMessageBar.pushWidget(progressbar)
+    progressbar.setValue(84)"""
+    # TODO ? : https://docs.qgis.org/3.16/en/docs/pyqgis_developer_cookbook/communicating.html#showing-progress
     from qgis.core import QgsProject, QgsVectorLayer
+
     try:
         params_no_limit = dict(params)
         if 'limit' in params_no_limit.keys():
             params_no_limit.pop('limit')
         test_query = requests.get("https://{}/api/v2/catalog/datasets/{}/query".format(domain, dataset_id),
                                   params_no_limit)
+        # TODO : tous les 20Mbs, checker cancel, et si cancel, abort (?)
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
         raise DomainError
     if test_query.status_code == 404:
@@ -267,13 +283,12 @@ def import_to_qgis_geojson(domain, dataset_id, params, path, file_name):
     exports = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id), params)
     geojson_data = exports.json()
 
-    full_path = path + '/' + file_name + '.geojson'
     try:
-        with open(full_path, 'w') as f:
+        with open(path, 'w') as f:
             json.dump(geojson_data, f)
     except FileNotFoundError:
         raise FileNotFoundError
-    vector_layer = QgsVectorLayer(full_path, dataset_id, "ogr")
+    vector_layer = QgsVectorLayer(path, dataset_id, "ogr")
     QgsProject.instance().addMapLayer(vector_layer)
 
 

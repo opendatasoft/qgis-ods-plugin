@@ -16,6 +16,7 @@ class InputDialog(QtWidgets.QDialog):
 
         for button in self.dialogButtonBox.buttons():
             button.setDefault(False)
+        self.filePathButton.clicked.connect(self.getFilePath)
         self.queryButton.toggled.connect(self.endpoint)
         self.exportsButton.toggled.connect(self.endpoint)
         self.updateListButton.clicked.connect(self.updateListButtonPressed)
@@ -50,6 +51,13 @@ class InputDialog(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.information(None, "ERROR:",
                                                   "The dataset you want does not exist on this domain.")
 
+    def getFilePath(self):
+        fileDialog = QtWidgets.QFileDialog(self)
+        fileDialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        fileName = fileDialog.getSaveFileName(self, "Choose save location", "/Users",
+                                              "Geojson Files (*.geojson)")
+        self.pathInput.setText(fileName[0])
+
     def endpoint(self):
         endpoint = 'query'
         if self.queryButton.isChecked():
@@ -65,8 +73,6 @@ class InputDialog(QtWidgets.QDialog):
     def ui_to_query(self):
         self.pathLabel.setVisible(False)
         self.pathInput.setVisible(False)
-        self.fileNameLabel.setVisible(False)
-        self.fileNameInput.setVisible(False)
         self.geometryLabel.setVisible(True)
         self.geomColumnListComboBox.setVisible(True)
         self.numberOfLinesLabel.setText("Number of lines you want (default all lines,\nor 10000 if dataset is bigger "
@@ -75,20 +81,13 @@ class InputDialog(QtWidgets.QDialog):
     def ui_to_exports(self):
         self.pathLabel.setVisible(True)
         self.pathInput.setVisible(True)
-        self.fileNameLabel.setVisible(True)
-        self.fileNameInput.setVisible(True)
         self.geometryLabel.setVisible(False)
         self.geomColumnListComboBox.setVisible(False)
         self.numberOfLinesLabel.setText("Number of lines you want :")
 
+    # TODO : si pas de file donnée, try tempfile
     def path(self):
         return self.pathInput.text()
-
-    def file_name(self):
-        file_name = self.fileNameInput.text()
-        if file_name.endswith(".geojson"):
-            file_name = file_name[:len(".geojson")]
-        return file_name
 
     def domain(self):
         url = self.domainInput.text()
@@ -134,8 +133,6 @@ class InputDialog(QtWidgets.QDialog):
     def push_ods_cache(self, ods_cache):
         if 'path' in ods_cache:
             self.pathInput.setText(ods_cache['path'])
-        if 'file_name' in ods_cache:
-            self.fileNameInput.setText(ods_cache['file_name'])
         if ods_cache['endpoint'] == 'query':
             self.queryButton.setChecked(True)
         elif ods_cache['endpoint'] == 'exports':
@@ -196,21 +193,19 @@ class InputDialog(QtWidgets.QDialog):
                                                   + ", ".join(helper_functions.ACCEPTED_GEOMETRY) + ".")
         else:
             params = self.params()
-            if self.path() == "" or self.file_name() == "":
-                QtWidgets.QMessageBox.information(None, "ERROR:", "Path and file name fields cannot be empty.")
+            if self.path() == "":
+                QtWidgets.QMessageBox.information(None, "ERROR:", "Path field cannot be empty.")
                 return
             if self.number_of_lines():
                 params['limit'] = self.number_of_lines()
             try:
-                helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), params, self.path(),
-                                                        self.file_name())
+                helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), params, self.path())
                 all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
                 dataset_index = self.datasetListComboBox.currentIndex()
                 geom_column_index = self.geomColumnListComboBox.currentIndex()
                 ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
                              'geom_column_index': geom_column_index, 'params': self.params(),
-                             'number_of_lines': self.number_of_lines(), 'endpoint': 'exports', 'path': self.path(),
-                             'file_name': self.file_name()}
+                             'number_of_lines': self.number_of_lines(), 'endpoint': 'exports', 'path': self.path()}
                 settings.setValue('ods_cache', ods_cache)
                 self.close()
             except helper_functions.OdsqlError:
@@ -223,6 +218,9 @@ class InputDialog(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.information(None, "ERROR:", "Limit has to be a strictly positive int.")
             except FileNotFoundError:
                 QtWidgets.QMessageBox.information(None, "ERROR:", "Specified folder path doesn't exist.")
+
+            # TODO : schema (either comme api V2 avec metadata json, either tableau avec colonne nom var et type)
+            #  pas dynamiquement lié aux filtres
 
 
 def remove_http(url):
