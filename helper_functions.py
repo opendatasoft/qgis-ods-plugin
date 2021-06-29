@@ -1,3 +1,5 @@
+import tempfile
+
 import requests
 from PyQt5 import QtWidgets
 
@@ -67,14 +69,23 @@ def import_to_qgis_geojson(domain, dataset_id, params, path):
 
     exports = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id), params,
                            stream=True)
-    # TODO : add exception when can't write on file PermissionError
+
     try:
-        with open(path, 'wb') as f:
+        file_path = path
+        if file_path == "":
+            file = tempfile.NamedTemporaryFile(suffix='.geojson')
+            file.close()
+            file_path = file.name
+            print(file_path)
+        with open(file_path, 'wb') as f:
             for chunk in exports.iter_content(chunk_size=None):
                 f.write(chunk)
+
     except FileNotFoundError:
         raise FileNotFoundError
-    vector_layer = QgsVectorLayer(path, dataset_id, "ogr")
+    except PermissionError:
+        raise PermissionError
+    vector_layer = QgsVectorLayer(file_path, dataset_id, "ogr")
     QgsProject.instance().addMapLayer(vector_layer)
 
 

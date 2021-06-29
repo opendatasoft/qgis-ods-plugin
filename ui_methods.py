@@ -118,11 +118,6 @@ class InputDialog(QtWidgets.QDialog):
                                                               "dataset.")
             return
         path = self.path()
-        if path == "":
-            import tempfile
-            temp_folder = tempfile.gettempdir()
-            path = temp_folder + '/tempDataset.geojson'
-            # TODO : use real tempfile to generate better name
         try:
             helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), self.params(), path)
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
@@ -141,6 +136,8 @@ class InputDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.information(None, "ERROR:", "Limit has to be a strictly positive int.")
         except FileNotFoundError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "Specified folder path doesn't exist.")
+        except PermissionError:
+            QtWidgets.QMessageBox.information(None, "ERROR:", "Permission required to write on this file.")
 
 
 def remove_http(url):
