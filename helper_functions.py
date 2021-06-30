@@ -41,6 +41,16 @@ def import_dataset_metadata(domain_url, dataset_id):
     return query.json()
 
 
+def get_geom_column(metadata):
+    for field in metadata['results'][0]['fields']:
+        if field['type'] == 'geo_shape':
+            return field['name']
+    for field in metadata['results'][0]['fields']:
+        if field['type'] == 'geo_point_2d':
+            return field['name']
+    return None
+
+
 def import_to_qgis_geojson(domain, dataset_id, params, path):
     from qgis.core import QgsProject, QgsVectorLayer
 

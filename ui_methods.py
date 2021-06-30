@@ -20,6 +20,7 @@ class InputDialog(QtWidgets.QDialog):
         self.updateListButton.clicked.connect(self.updateListButtonPressed)
         self.datasetListComboBox.setEditable(True)
         self.datasetListComboBox.currentIndexChanged.connect(self.updateSchemaTable)
+        self.schemaTableWidget.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         self.dialogButtonBox.accepted.connect(self.importDataset)
         self.show()
 
@@ -71,6 +72,11 @@ class InputDialog(QtWidgets.QDialog):
                 params['select'] = select_input[len("select="):]
             else:
                 params['select'] = select_input
+            if self.defaultGeomCheckBox.isChecked():
+                geom_column_name = helper_functions.get_geom_column(helper_functions.import_dataset_metadata(self.domain(), self.dataset_id()))
+                if geom_column_name:
+                    if geom_column_name not in params['select']:
+                        params['select'] += ',' + geom_column_name
             if '*' in select_input:
                 params.pop('select', None)
 
@@ -100,6 +106,7 @@ class InputDialog(QtWidgets.QDialog):
         self.domainInput.setText(ods_cache['domain'])
         self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
         self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
+        self.defaultGeomCheckBox.setChecked(ods_cache['default_geom_column'])
         if 'select' in ods_cache['params']:
             self.selectInput.setText(ods_cache['params']['select'])
         if 'where' in ods_cache['params']:
@@ -123,7 +130,8 @@ class InputDialog(QtWidgets.QDialog):
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
             dataset_index = self.datasetListComboBox.currentIndex()
             ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
-                         'params': self.params(), 'path': self.path()}
+                         'default_geom_column': self.defaultGeomCheckBox.isChecked(), 'params': self.params(),
+                         'path': self.path()}
             settings.setValue('ods_cache', ods_cache)
             self.close()
         except helper_functions.OdsqlError:
