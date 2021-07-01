@@ -22,6 +22,7 @@ class InputDialog(QtWidgets.QDialog):
         self.datasetListComboBox.currentIndexChanged.connect(self.updateSchemaTable)
         self.schemaTableWidget.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         self.dialogButtonBox.accepted.connect(self.importDataset)
+
         self.show()
 
     def updateListButtonPressed(self):
@@ -126,7 +127,7 @@ class InputDialog(QtWidgets.QDialog):
             return
         path = self.path()
         try:
-            helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), self.params(), path)
+            helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), self.params(), path, self)
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
             dataset_index = self.datasetListComboBox.currentIndex()
             ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
@@ -146,6 +147,26 @@ class InputDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.information(None, "ERROR:", "Specified folder path doesn't exist.")
         except PermissionError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "Permission required to write on this file.")
+
+
+class CancelImport(QtWidgets.QDialog):
+    def __init__(self, dialog):
+        super(CancelImport, self).__init__()
+        ui_dir = os.path.dirname(os.path.abspath(__file__))
+        ui_path = os.path.join(ui_dir, 'cancel_import.ui')
+        uic.loadUi(ui_path, self)
+
+        self.dialog = dialog
+        self.dialog.setVisible(False)
+        self.isCanceled = False
+        self.cancelButton.clicked.connect(self.cancelImport)
+
+        self.show()
+
+    def cancelImport(self):
+        self.isCanceled = True
+
+
 
 
 def remove_http(url):

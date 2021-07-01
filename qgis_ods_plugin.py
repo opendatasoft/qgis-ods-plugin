@@ -29,5 +29,5 @@ class QgisOdsPlugin:
         if dialog.exec():
             pass
 
-            # TODO : add auth to get private dataset
+            # TODO : add auth to get private dataset (basicAuth ou api key)
 
