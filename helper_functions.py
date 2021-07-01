@@ -54,9 +54,7 @@ def get_geom_column(metadata):
     return None
 
 
-def import_to_qgis_geojson(domain, dataset_id, params, path, dialog):
-    from qgis.core import QgsProject, QgsVectorLayer
-    # TODO (faire une nouvelle fenêtre)
+def import_dataset_to_qgis(domain, dataset_id, params):
     try:
         params_no_limit = dict(params)
         if 'limit' in params_no_limit.keys():
@@ -79,11 +77,15 @@ def import_to_qgis_geojson(domain, dataset_id, params, path, dialog):
         if limit < -1:
             raise NumberOfLinesError
 
-    exports = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id), params,
-                           stream=True)
+    imported_dataset = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id),
+                                    params, stream=True)
+    return imported_dataset
 
-    cancelImport = ui_methods.CancelImport(dialog)
 
+def load_dataset_to_qgis(path, dataset_id, imported_dataset):
+    from qgis.core import QgsProject, QgsVectorLayer
+
+    cancelImport = ui_methods.CancelImport()
     try:
         file_path = path
         if file_path == "":
@@ -92,11 +94,9 @@ def import_to_qgis_geojson(domain, dataset_id, params, path, dialog):
             file_path = file.name
             print(file_path)
         with open(file_path, 'wb') as f:
-            for i, chunk in enumerate(exports.iter_content(chunk_size=128*1024)):
+            for i, chunk in enumerate(imported_dataset.iter_content(chunk_size=1024)):
                 f.write(chunk)
-                print(i)
                 QCoreApplication.processEvents()
-                # TODO : message canceled import
                 if cancelImport.isCanceled:
                     return
 
@@ -104,6 +104,7 @@ def import_to_qgis_geojson(domain, dataset_id, params, path, dialog):
         raise FileNotFoundError
     except PermissionError:
         raise PermissionError
+
     vector_layer = QgsVectorLayer(file_path, dataset_id, "ogr")
     QgsProject.instance().addMapLayer(vector_layer)
 

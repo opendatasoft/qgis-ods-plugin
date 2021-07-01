@@ -74,7 +74,8 @@ class InputDialog(QtWidgets.QDialog):
             else:
                 params['select'] = select_input
             if self.defaultGeomCheckBox.isChecked():
-                geom_column_name = helper_functions.get_geom_column(helper_functions.import_dataset_metadata(self.domain(), self.dataset_id()))
+                geom_column_name = helper_functions.get_geom_column(
+                    helper_functions.import_dataset_metadata(self.domain(), self.dataset_id()))
                 if geom_column_name:
                     if geom_column_name not in params['select']:
                         params['select'] += ',' + geom_column_name
@@ -127,7 +128,9 @@ class InputDialog(QtWidgets.QDialog):
             return
         path = self.path()
         try:
-            helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), self.params(), path, self)
+            imported_dataset = helper_functions.import_dataset_to_qgis(self.domain(), self.dataset_id(), self.params())
+            self.setVisible(False)
+            helper_functions.load_dataset_to_qgis(path, self.dataset_id(), imported_dataset)
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
             dataset_index = self.datasetListComboBox.currentIndex()
             ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
@@ -150,14 +153,12 @@ class InputDialog(QtWidgets.QDialog):
 
 
 class CancelImport(QtWidgets.QDialog):
-    def __init__(self, dialog):
+    def __init__(self):
         super(CancelImport, self).__init__()
         ui_dir = os.path.dirname(os.path.abspath(__file__))
         ui_path = os.path.join(ui_dir, 'cancel_import.ui')
         uic.loadUi(ui_path, self)
 
-        self.dialog = dialog
-        self.dialog.setVisible(False)
         self.isCanceled = False
         self.cancelButton.clicked.connect(self.cancelImport)
 
@@ -165,8 +166,6 @@ class CancelImport(QtWidgets.QDialog):
 
     def cancelImport(self):
         self.isCanceled = True
-
-
 
 
 def remove_http(url):
