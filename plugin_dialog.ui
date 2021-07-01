@@ -7,144 +7,55 @@
     <x>0</x>
     <y>0</y>
     <width>687</width>
-    <height>397</height>
+    <height>392</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Import an ODS dataset</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="14" column="0">
-    <widget class="QLabel" name="whereLabel">
-     <property name="text">
-      <string>Add a where statement :</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="2">
-    <widget class="QPushButton" name="updateListButton">
-     <property name="text">
-      <string>Update dataset list</string>
-     </property>
-    </widget>
-   </item>
-   <item row="12" column="0">
-    <widget class="QLabel" name="selectLabel">
-     <property name="text">
-      <string>Add a select statement :</string>
-     </property>
-    </widget>
-   </item>
-   <item row="18" column="0">
-    <widget class="QLabel" name="numberOfLinesLabel">
+   <item row="19" column="0">
+    <widget class="QLabel" name="limitLabel">
      <property name="lineWidth">
       <number>1</number>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Number of lines you want (default all lines,&lt;/p&gt;&lt;p&gt;or 10000 if dataset is bigger than that) :&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a limit statement :&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>
-   <item row="14" column="1" colspan="2">
-    <widget class="QLineEdit" name="whereInput">
-     <property name="placeholderText">
-      <string>columnA:valueA</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QRadioButton" name="queryButton">
-     <property name="text">
-      <string>Use query</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-     <attribute name="buttonGroup">
-      <string notr="true">buttonGroup</string>
-     </attribute>
-    </widget>
-   </item>
-   <item row="16" column="0">
-    <widget class="QLabel" name="orderByLabel">
-     <property name="text">
-      <string>Add an order_by statement :</string>
-     </property>
-    </widget>
-   </item>
-   <item row="10" column="0">
-    <widget class="QLabel" name="geometryLabel">
-     <property name="text">
-      <string>Column containing the geometry :</string>
-     </property>
-    </widget>
-   </item>
-   <item row="19" column="1" colspan="2">
-    <widget class="QDialogButtonBox" name="dialogButtonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="pathLabel">
-     <property name="text">
-      <string>Folder path where to store the dataset :</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QRadioButton" name="exportsButton">
-     <property name="text">
-      <string>Use exports</string>
-     </property>
-     <attribute name="buttonGroup">
-      <string notr="true">buttonGroup</string>
-     </attribute>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="domainLabel">
-     <property name="text">
-      <string>Choose a domain name, then click on the button 
-to update the possible datasets.</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1" colspan="2">
-    <widget class="QComboBox" name="datasetListComboBox"/>
-   </item>
-   <item row="12" column="1" colspan="2">
-    <widget class="QLineEdit" name="selectInput">
-     <property name="placeholderText">
-      <string>columnA,columnB</string>
-     </property>
-    </widget>
-   </item>
-   <item row="16" column="1" colspan="2">
+   <item row="17" column="1" colspan="2">
     <widget class="QLineEdit" name="orderByInput">
      <property name="placeholderText">
       <string>columnA</string>
      </property>
     </widget>
    </item>
-   <item row="18" column="1" colspan="2">
-    <widget class="QLineEdit" name="numberOfLinesInput"/>
-   </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="datasetLabel">
+   <item row="15" column="0">
+    <widget class="QLabel" name="whereLabel">
      <property name="text">
-      <string>Dataset name :</string>
+      <string>Add a where statement :</string>
      </property>
     </widget>
    </item>
-   <item row="10" column="1" colspan="2">
-    <widget class="QComboBox" name="geomColumnListComboBox"/>
+   <item row="17" column="0">
+    <widget class="QLabel" name="orderByLabel">
+     <property name="text">
+      <string>Add an order_by statement :</string>
+     </property>
+    </widget>
    </item>
-   <item row="6" column="1">
+   <item row="21" column="0">
+    <widget class="QLabel" name="pathLabel">
+     <property name="text">
+      <string>Full path of the dataset :</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1" colspan="2">
+    <widget class="QComboBox" name="datasetListComboBox"/>
+   </item>
+   <item row="5" column="1">
     <widget class="QLineEdit" name="domainInput">
      <property name="text">
       <string/>
@@ -154,27 +65,100 @@ to update the possible datasets.</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="fileNameLabel">
+   <item row="19" column="1" colspan="2">
+    <widget class="QLineEdit" name="limitInput"/>
+   </item>
+   <item row="12" column="0">
+    <widget class="QLabel" name="selectLabel">
      <property name="text">
-      <string>File name : (always a geojson for now)</string>
+      <string>Add a select statement :</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1" colspan="2">
-    <widget class="QLineEdit" name="fileNameInput">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="placeholderText">
-      <string>fileName</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1" colspan="2">
+   <item row="21" column="1">
     <widget class="QLineEdit" name="pathInput">
      <property name="placeholderText">
-      <string>My/Favorite/Folder</string>
+      <string>My/Favorite/dataset.geojson</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="datasetLabel">
+     <property name="text">
+      <string>Dataset name :</string>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="1" colspan="2">
+    <widget class="QLineEdit" name="selectInput">
+     <property name="placeholderText">
+      <string>columnA,columnB</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0" colspan="3">
+    <widget class="QTableWidget" name="schemaTableWidget">
+     <attribute name="horizontalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <row>
+      <property name="text">
+       <string>Variable name</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Variable type</string>
+      </property>
+     </row>
+    </widget>
+   </item>
+   <item row="15" column="1" colspan="2">
+    <widget class="QLineEdit" name="whereInput">
+     <property name="placeholderText">
+      <string>columnA:valueA</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0">
+    <widget class="QCheckBox" name="defaultGeomCheckBox">
+     <property name="text">
+      <string>Always add geometry column if not selected</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="21" column="2">
+    <widget class="QPushButton" name="filePathButton">
+     <property name="text">
+      <string>Browse</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QPushButton" name="updateListButton">
+     <property name="text">
+      <string>Update dataset list</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="domainLabel">
+     <property name="text">
+      <string>Choose a domain name, then click on the button 
+to update the possible datasets.</string>
+     </property>
+    </widget>
+   </item>
+   <item row="24" column="1" colspan="2">
+    <widget class="QDialogButtonBox" name="dialogButtonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
@@ -199,7 +183,4 @@ to update the possible datasets.</string>
    </hints>
   </connection>
  </connections>
- <buttongroups>
-  <buttongroup name="buttonGroup"/>
- </buttongroups>
 </ui>
