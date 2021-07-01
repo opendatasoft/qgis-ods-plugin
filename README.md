@@ -10,5 +10,3 @@ For installing, just clone this repo in your QGIS profile directory:
 - Mac OS: `/Users/USER/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/qgis-ods-plugin`
 
 Then start QGIS and enable the plugin (menu Plugins > Manager and Install Plugins...) 
-
-Tip : it is better to launch Qgis' Python plugin before using this Plugin.
