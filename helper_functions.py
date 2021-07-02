@@ -2,6 +2,9 @@ import tempfile
 
 import requests
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QCoreApplication
+
+from . import ui_methods
 
 V2_QUERY_SIZE_LIMIT = 10000
 V2_API_CHUNK_SIZE = 100
@@ -51,16 +54,13 @@ def get_geom_column(metadata):
     return None
 
 
-def import_to_qgis_geojson(domain, dataset_id, params, path):
-    from qgis.core import QgsProject, QgsVectorLayer
-
+def import_dataset_to_qgis(domain, dataset_id, params):
     try:
         params_no_limit = dict(params)
         if 'limit' in params_no_limit.keys():
             params_no_limit.pop('limit')
         test_query = requests.get("https://{}/api/v2/catalog/datasets/{}/query".format(domain, dataset_id),
                                   params_no_limit)
-        # TODO : tous les 20Mbs, checker cancel, et si cancel, abort (?)
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
         raise DomainError
     if test_query.status_code == 404:
@@ -77,9 +77,15 @@ def import_to_qgis_geojson(domain, dataset_id, params, path):
         if limit < -1:
             raise NumberOfLinesError
 
-    exports = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id), params,
-                           stream=True)
+    imported_dataset = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id),
+                                    params, stream=True)
+    return imported_dataset
 
+
+def load_dataset_to_qgis(path, dataset_id, imported_dataset):
+    from qgis.core import QgsProject, QgsVectorLayer
+
+    cancelImportDialog = ui_methods.CancelImportDialog()
     try:
         file_path = path
         if file_path == "":
@@ -88,13 +94,17 @@ def import_to_qgis_geojson(domain, dataset_id, params, path):
             file_path = file.name
             print(file_path)
         with open(file_path, 'wb') as f:
-            for chunk in exports.iter_content(chunk_size=None):
+            for chunk in imported_dataset.iter_content(chunk_size=1024):
                 f.write(chunk)
+                QCoreApplication.processEvents()
+                if cancelImportDialog.isCanceled:
+                    return
 
     except FileNotFoundError:
         raise FileNotFoundError
     except PermissionError:
         raise PermissionError
+
     vector_layer = QgsVectorLayer(file_path, dataset_id, "ogr")
     QgsProject.instance().addMapLayer(vector_layer)
 
