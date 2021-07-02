@@ -7,8 +7,10 @@ V2_QUERY_SIZE_LIMIT = 10000
 V2_API_CHUNK_SIZE = 100
 
 
-def import_dataset_list(domain_url):
+def import_dataset_list(domain_url, apikey):
     params = {'limit': V2_API_CHUNK_SIZE}
+    if apikey:
+        params['apikey'] = apikey
     try:
         first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
         if first_query.status_code == 404:
@@ -31,9 +33,12 @@ def datasets_to_dataset_id_list(json_dataset):
     return dataset_id_list
 
 
-def import_dataset_metadata(domain_url, dataset_id):
+def import_dataset_metadata(domain_url, dataset_id, apikey):
+    params = {'where': 'datasetid:"' + dataset_id + '"'}
+    if apikey:
+        params['apikey'] = apikey
     try:
-        query = requests.get("https://{}/api/v2/catalog/query?where=datasetid:'{}'".format(domain_url, dataset_id))
+        query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
     except requests.exceptions.ConnectionError:
         raise DomainError
     if query.status_code == 404 or query.json()['total_count'] == 0:
@@ -60,7 +65,7 @@ def import_to_qgis_geojson(domain, dataset_id, params, path):
             params_no_limit.pop('limit')
         test_query = requests.get("https://{}/api/v2/catalog/datasets/{}/query".format(domain, dataset_id),
                                   params_no_limit)
-        # TODO : tous les 20Mbs, checker cancel, et si cancel, abort (?)
+
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
         raise DomainError
     if test_query.status_code == 404:

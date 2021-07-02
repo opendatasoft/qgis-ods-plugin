@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>687</width>
-    <height>392</height>
+    <height>449</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -161,6 +161,16 @@ to update the possible datasets.</string>
       <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="apikeyLabel">
+     <property name="text">
+      <string>(Optional) API key :</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1" colspan="2">
+    <widget class="QLineEdit" name="apikeyInput"/>
    </item>
   </layout>
  </widget>

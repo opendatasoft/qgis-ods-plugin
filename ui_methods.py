@@ -27,8 +27,12 @@ class InputDialog(QtWidgets.QDialog):
     def updateListButtonPressed(self):
         self.datasetListComboBox.clear()
         try:
-            dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
-                remove_http(self.domainInput.text())))
+            if self.apikey():
+                dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
+                    remove_http(self.domain()), self.apikey()))
+            else:
+                dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
+                    remove_http(self.domain()), None))
             self.datasetListComboBox.addItems(dataset_id_list)
         except helper_functions.DomainError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
@@ -36,13 +40,21 @@ class InputDialog(QtWidgets.QDialog):
     def updateSchemaTable(self):
         if self.datasetListComboBox.currentText():
             self.schemaTableWidget.setColumnCount(0)
-            metadata = helper_functions.import_dataset_metadata(remove_http(self.domainInput.text()),
-                                                                self.datasetListComboBox.currentText())
-            for field in metadata['results'][0]['fields']:
-                column_position = self.schemaTableWidget.columnCount()
-                self.schemaTableWidget.insertColumn(column_position)
-                self.schemaTableWidget.setItem(0, column_position, QtWidgets.QTableWidgetItem(field['name']))
-                self.schemaTableWidget.setItem(1, column_position, QtWidgets.QTableWidgetItem(field['type']))
+            try:
+                if self.apikey():
+                    metadata = helper_functions.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
+                                                                        self.apikey())
+                else:
+                    metadata = helper_functions.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
+                                                                        None)
+                for field in metadata['results'][0]['fields']:
+                    column_position = self.schemaTableWidget.columnCount()
+                    self.schemaTableWidget.insertColumn(column_position)
+                    self.schemaTableWidget.setItem(0, column_position, QtWidgets.QTableWidgetItem(field['name']))
+                    self.schemaTableWidget.setItem(1, column_position, QtWidgets.QTableWidgetItem(field['type']))
+            except helper_functions.DatasetError:
+                QtWidgets.QMessageBox.information(None, "ERROR:", "This dataset is private. "
+                                                                  "You need an API key to access it.")
 
     def getFilePath(self):
         fileDialog = QtWidgets.QFileDialog(self)
@@ -57,6 +69,9 @@ class InputDialog(QtWidgets.QDialog):
     def domain(self):
         url = self.domainInput.text()
         return remove_http(url)
+
+    def apikey(self):
+        return self.apikeyInput.text()
 
     def dataset_id(self):
         return self.datasetListComboBox.currentText()
@@ -73,7 +88,8 @@ class InputDialog(QtWidgets.QDialog):
             else:
                 params['select'] = select_input
             if self.defaultGeomCheckBox.isChecked():
-                geom_column_name = helper_functions.get_geom_column(helper_functions.import_dataset_metadata(self.domain(), self.dataset_id()))
+                geom_column_name = helper_functions.get_geom_column(
+                    helper_functions.import_dataset_metadata(self.domain(), self.dataset_id()))
                 if geom_column_name:
                     if geom_column_name not in params['select']:
                         params['select'] += ',' + geom_column_name
@@ -104,6 +120,8 @@ class InputDialog(QtWidgets.QDialog):
 
     def push_ods_cache(self, ods_cache):
         self.domainInput.setText(ods_cache['domain'])
+        if 'apikey' in ods_cache:
+            self.apikeyInput.setText(ods_cache['apikey'])
         self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
         self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
         self.defaultGeomCheckBox.setChecked(ods_cache['default_geom_column'])
@@ -125,13 +143,16 @@ class InputDialog(QtWidgets.QDialog):
                                                               "dataset.")
             return
         path = self.path()
+        params = self.params()
+        if self.apikey():
+            params['apikey'] = self.apikey()
         try:
-            helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), self.params(), path)
+            helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), params, path)
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
             dataset_index = self.datasetListComboBox.currentIndex()
             ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
                          'default_geom_column': self.defaultGeomCheckBox.isChecked(), 'params': self.params(),
-                         'path': self.path()}
+                         'path': self.path(), 'apikey': self.apikey()}
             settings.setValue('ods_cache', ods_cache)
             self.close()
         except helper_functions.OdsqlError:
