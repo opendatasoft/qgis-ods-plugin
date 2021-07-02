@@ -152,9 +152,9 @@ class InputDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.information(None, "ERROR:", "Permission required to write on this file.")
 
 
-class CancelImport(QtWidgets.QDialog):
+class CancelImportDialog(QtWidgets.QDialog):
     def __init__(self):
-        super(CancelImport, self).__init__()
+        super(CancelImportDialog, self).__init__()
         ui_dir = os.path.dirname(os.path.abspath(__file__))
         ui_path = os.path.join(ui_dir, 'cancel_import.ui')
         uic.loadUi(ui_path, self)

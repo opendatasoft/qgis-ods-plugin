@@ -85,7 +85,7 @@ def import_dataset_to_qgis(domain, dataset_id, params):
 def load_dataset_to_qgis(path, dataset_id, imported_dataset):
     from qgis.core import QgsProject, QgsVectorLayer
 
-    cancelImport = ui_methods.CancelImport()
+    cancelImportDialog = ui_methods.CancelImportDialog()
     try:
         file_path = path
         if file_path == "":
@@ -94,10 +94,10 @@ def load_dataset_to_qgis(path, dataset_id, imported_dataset):
             file_path = file.name
             print(file_path)
         with open(file_path, 'wb') as f:
-            for i, chunk in enumerate(imported_dataset.iter_content(chunk_size=1024)):
+            for chunk in imported_dataset.iter_content(chunk_size=1024):
                 f.write(chunk)
                 QCoreApplication.processEvents()
-                if cancelImport.isCanceled:
+                if cancelImportDialog.isCanceled:
                     return
 
     except FileNotFoundError:
