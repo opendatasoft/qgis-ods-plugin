@@ -56,6 +56,42 @@ def get_geom_column(metadata):
     return None
 
 
+def create_new_ods_auth_config(apikey):
+    from qgis.core import QgsApplication, QgsAuthMethodConfig
+
+    auth_manager = QgsApplication.authManager()
+    config = QgsAuthMethodConfig()
+    config.setName("ods-cache")
+    config.setMethod("EsriToken")
+    config.setConfig("token", apikey)
+    auth_manager.storeAuthenticationConfig(config)
+
+
+def remove_ods_auth_config():
+    from qgis.core import QgsApplication, QgsAuthMethodConfig
+
+    auth_manager = QgsApplication.authManager()
+    config_dict = auth_manager.availableAuthMethodConfigs()
+    for authConfig in config_dict.keys():
+        if config_dict[authConfig].name() == 'ods-cache':
+            auth_manager.removeAuthenticationConfig(authConfig)
+            break
+
+
+def get_apikey_from_cache():
+    from qgis.core import QgsApplication, QgsAuthMethodConfig
+
+    auth_manager = QgsApplication.authManager()
+    config_dict = auth_manager.availableAuthMethodConfigs()
+    apikey = None
+    for config in config_dict.values():
+        if config.name() == 'ods-cache':
+            aux_config = QgsAuthMethodConfig()
+            auth_manager.loadAuthenticationConfig(config.id(), aux_config, True)
+            apikey = aux_config.configMap()['token']
+    return apikey
+
+
 def import_to_qgis_geojson(domain, dataset_id, params, path):
     from qgis.core import QgsProject, QgsVectorLayer
 
@@ -73,6 +109,8 @@ def import_to_qgis_geojson(domain, dataset_id, params, path):
     if test_query.status_code == 400:
         QtWidgets.QMessageBox.information(None, "ERROR:", test_query.json()['message'])
         raise OdsqlError
+    if test_query.status_code == 401:
+        raise AccessError
 
     if 'limit' in params:
         try:
@@ -84,6 +122,7 @@ def import_to_qgis_geojson(domain, dataset_id, params, path):
 
     exports = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id), params,
                            stream=True)
+    print(exports)
 
     try:
         file_path = path
@@ -91,7 +130,6 @@ def import_to_qgis_geojson(domain, dataset_id, params, path):
             file = tempfile.NamedTemporaryFile(suffix='.geojson')
             file.close()
             file_path = file.name
-            print(file_path)
         with open(file_path, 'wb') as f:
             for chunk in exports.iter_content(chunk_size=None):
                 f.write(chunk)
@@ -117,4 +155,8 @@ class NumberOfLinesError(Exception):
 
 
 class DatasetError(Exception):
+    pass
+
+
+class AccessError(Exception):
     pass

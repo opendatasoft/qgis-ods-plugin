@@ -118,10 +118,10 @@ class InputDialog(QtWidgets.QDialog):
                 params['limit'] = limit_input
         return params
 
-    def push_ods_cache(self, ods_cache):
+    def push_ods_cache(self, ods_cache, apikey):
         self.domainInput.setText(ods_cache['domain'])
-        if 'apikey' in ods_cache:
-            self.apikeyInput.setText(ods_cache['apikey'])
+        if apikey:
+            self.apikeyInput.setText(apikey)
         self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
         self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
         self.defaultGeomCheckBox.setChecked(ods_cache['default_geom_column'])
@@ -152,8 +152,15 @@ class InputDialog(QtWidgets.QDialog):
             dataset_index = self.datasetListComboBox.currentIndex()
             ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
                          'default_geom_column': self.defaultGeomCheckBox.isChecked(), 'params': self.params(),
-                         'path': self.path(), 'apikey': self.apikey()}
+                         'path': self.path()}
             settings.setValue('ods_cache', ods_cache)
+
+            if self.apikey():
+                if self.apikey() != helper_functions.get_apikey_from_cache():
+                    helper_functions.create_new_ods_auth_config(self.apikey())
+            else:
+                helper_functions.remove_ods_auth_config()
+
             self.close()
         except helper_functions.OdsqlError:
             pass
@@ -167,6 +174,8 @@ class InputDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.information(None, "ERROR:", "Specified folder path doesn't exist.")
         except PermissionError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "Permission required to write on this file.")
+        except helper_functions.AccessError:
+            QtWidgets.QMessageBox.information(None, "ERROR:", "The apikey to access this dataset is wrong.")
 
 
 def remove_http(url):
