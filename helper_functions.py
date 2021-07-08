@@ -2,6 +2,9 @@ import tempfile
 
 import requests
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QCoreApplication
+
+from . import ui_methods
 
 V2_QUERY_SIZE_LIMIT = 10000
 V2_API_CHUNK_SIZE = 100
@@ -56,6 +59,7 @@ def get_geom_column(metadata):
     return None
 
 
+
 def create_new_ods_auth_config(apikey):
     from qgis.core import QgsApplication, QgsAuthMethodConfig
 
@@ -91,9 +95,8 @@ def get_apikey_from_cache():
             apikey = aux_config.configMap()['token']
     return apikey
 
-
-def import_to_qgis_geojson(domain, dataset_id, params, path):
-    from qgis.core import QgsProject, QgsVectorLayer
+  
+def import_dataset_to_qgis(domain, dataset_id, params):
 
     try:
         params_no_limit = dict(params)
@@ -120,10 +123,15 @@ def import_to_qgis_geojson(domain, dataset_id, params, path):
         if limit < -1:
             raise NumberOfLinesError
 
-    exports = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id), params,
-                           stream=True)
-    print(exports)
+    imported_dataset = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id),
+                                    params, stream=True)
+    return imported_dataset
 
+  
+def load_dataset_to_qgis(path, dataset_id, imported_dataset):
+    from qgis.core import QgsProject, QgsVectorLayer
+
+    cancelImportDialog = ui_methods.CancelImportDialog()
     try:
         file_path = path
         if file_path == "":
@@ -131,13 +139,17 @@ def import_to_qgis_geojson(domain, dataset_id, params, path):
             file.close()
             file_path = file.name
         with open(file_path, 'wb') as f:
-            for chunk in exports.iter_content(chunk_size=None):
+            for chunk in imported_dataset.iter_content(chunk_size=1024):
                 f.write(chunk)
+                QCoreApplication.processEvents()
+                if cancelImportDialog.isCanceled:
+                    return
 
     except FileNotFoundError:
         raise FileNotFoundError
     except PermissionError:
         raise PermissionError
+
     vector_layer = QgsVectorLayer(file_path, dataset_id, "ogr")
     QgsProject.instance().addMapLayer(vector_layer)
 

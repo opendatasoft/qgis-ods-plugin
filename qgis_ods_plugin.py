@@ -29,5 +29,3 @@ class QgisOdsPlugin:
             dialog.push_ods_cache(settings.value('ods_cache'), apikey)
         if dialog.exec():
             pass
-
-            # TODO : add Error when apikey is gibberish

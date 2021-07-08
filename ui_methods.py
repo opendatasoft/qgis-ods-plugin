@@ -22,6 +22,7 @@ class InputDialog(QtWidgets.QDialog):
         self.datasetListComboBox.currentIndexChanged.connect(self.updateSchemaTable)
         self.schemaTableWidget.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         self.dialogButtonBox.accepted.connect(self.importDataset)
+
         self.show()
 
     def updateListButtonPressed(self):
@@ -147,7 +148,9 @@ class InputDialog(QtWidgets.QDialog):
         if self.apikey():
             params['apikey'] = self.apikey()
         try:
-            helper_functions.import_to_qgis_geojson(self.domain(), self.dataset_id(), params, path)
+            imported_dataset = helper_functions.import_dataset_to_qgis(self.domain(), self.dataset_id(), self.params())
+            self.setVisible(False)
+            helper_functions.load_dataset_to_qgis(path, self.dataset_id(), imported_dataset)
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
             dataset_index = self.datasetListComboBox.currentIndex()
             ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
@@ -176,6 +179,22 @@ class InputDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.information(None, "ERROR:", "Permission required to write on this file.")
         except helper_functions.AccessError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "The apikey to access this dataset is wrong.")
+
+
+class CancelImportDialog(QtWidgets.QDialog):
+    def __init__(self):
+        super(CancelImportDialog, self).__init__()
+        ui_dir = os.path.dirname(os.path.abspath(__file__))
+        ui_path = os.path.join(ui_dir, 'cancel_import.ui')
+        uic.loadUi(ui_path, self)
+
+        self.isCanceled = False
+        self.cancelButton.clicked.connect(self.cancelImport)
+
+        self.show()
+
+    def cancelImport(self):
+        self.isCanceled = True
 
 
 def remove_http(url):
