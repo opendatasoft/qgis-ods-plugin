@@ -10,8 +10,10 @@ V2_QUERY_SIZE_LIMIT = 10000
 V2_API_CHUNK_SIZE = 100
 
 
-def import_dataset_list(domain_url):
+def import_dataset_list(domain_url, apikey):
     params = {'limit': V2_API_CHUNK_SIZE}
+    if apikey:
+        params['apikey'] = apikey
     try:
         first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
         if first_query.status_code == 404:
@@ -34,9 +36,12 @@ def datasets_to_dataset_id_list(json_dataset):
     return dataset_id_list
 
 
-def import_dataset_metadata(domain_url, dataset_id):
+def import_dataset_metadata(domain_url, dataset_id, apikey):
+    params = {'where': 'datasetid:"' + dataset_id + '"'}
+    if apikey:
+        params['apikey'] = apikey
     try:
-        query = requests.get("https://{}/api/v2/catalog/query?where=datasetid:'{}'".format(domain_url, dataset_id))
+        query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
     except requests.exceptions.ConnectionError:
         raise DomainError
     if query.status_code == 404 or query.json()['total_count'] == 0:
@@ -54,13 +59,52 @@ def get_geom_column(metadata):
     return None
 
 
+
+def create_new_ods_auth_config(apikey):
+    from qgis.core import QgsApplication, QgsAuthMethodConfig
+
+    auth_manager = QgsApplication.authManager()
+    config = QgsAuthMethodConfig()
+    config.setName("ods-cache")
+    config.setMethod("EsriToken")
+    config.setConfig("token", apikey)
+    auth_manager.storeAuthenticationConfig(config)
+
+
+def remove_ods_auth_config():
+    from qgis.core import QgsApplication, QgsAuthMethodConfig
+
+    auth_manager = QgsApplication.authManager()
+    config_dict = auth_manager.availableAuthMethodConfigs()
+    for authConfig in config_dict.keys():
+        if config_dict[authConfig].name() == 'ods-cache':
+            auth_manager.removeAuthenticationConfig(authConfig)
+            break
+
+
+def get_apikey_from_cache():
+    from qgis.core import QgsApplication, QgsAuthMethodConfig
+
+    auth_manager = QgsApplication.authManager()
+    config_dict = auth_manager.availableAuthMethodConfigs()
+    apikey = None
+    for config in config_dict.values():
+        if config.name() == 'ods-cache':
+            aux_config = QgsAuthMethodConfig()
+            auth_manager.loadAuthenticationConfig(config.id(), aux_config, True)
+            apikey = aux_config.configMap()['token']
+    return apikey
+
+  
 def import_dataset_to_qgis(domain, dataset_id, params):
+
     try:
         params_no_limit = dict(params)
         if 'limit' in params_no_limit.keys():
             params_no_limit.pop('limit')
         test_query = requests.get("https://{}/api/v2/catalog/datasets/{}/query".format(domain, dataset_id),
                                   params_no_limit)
+
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
         raise DomainError
     if test_query.status_code == 404:
@@ -68,6 +112,8 @@ def import_dataset_to_qgis(domain, dataset_id, params):
     if test_query.status_code == 400:
         QtWidgets.QMessageBox.information(None, "ERROR:", test_query.json()['message'])
         raise OdsqlError
+    if test_query.status_code == 401:
+        raise AccessError
 
     if 'limit' in params:
         try:
@@ -81,7 +127,7 @@ def import_dataset_to_qgis(domain, dataset_id, params):
                                     params, stream=True)
     return imported_dataset
 
-
+  
 def load_dataset_to_qgis(path, dataset_id, imported_dataset):
     from qgis.core import QgsProject, QgsVectorLayer
 
@@ -92,7 +138,6 @@ def load_dataset_to_qgis(path, dataset_id, imported_dataset):
             file = tempfile.NamedTemporaryFile(suffix='.geojson')
             file.close()
             file_path = file.name
-            print(file_path)
         with open(file_path, 'wb') as f:
             for chunk in imported_dataset.iter_content(chunk_size=1024):
                 f.write(chunk)
@@ -122,4 +167,8 @@ class NumberOfLinesError(Exception):
 
 
 class DatasetError(Exception):
+    pass
+
+
+class AccessError(Exception):
     pass
