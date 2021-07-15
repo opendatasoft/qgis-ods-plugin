@@ -90,7 +90,7 @@ class InputDialog(QtWidgets.QDialog):
                 params['select'] = select_input
             if self.defaultGeomCheckBox.isChecked():
                 geom_column_name = helper_functions.get_geom_column(
-                    helper_functions.import_dataset_metadata(self.domain(), self.dataset_id()))
+                    helper_functions.import_dataset_metadata(self.domain(), self.dataset_id(), self.apikey()))
                 if geom_column_name:
                     if geom_column_name not in params['select']:
                         params['select'] += ',' + geom_column_name
