@@ -85,7 +85,7 @@
    <item row="7" column="0">
     <widget class="QLabel" name="datasetLabel">
      <property name="text">
-      <string>Dataset name :</string>
+      <string>Dataset identifier :</string>
      </property>
     </widget>
    </item>
@@ -103,12 +103,17 @@
      </attribute>
      <row>
       <property name="text">
-       <string>Variable name</string>
+       <string>Label</string>
       </property>
      </row>
      <row>
       <property name="text">
-       <string>Variable type</string>
+       <string>Field name</string>
+      </property>
+     </row>
+     <row>
+      <property name="text">
+       <string>Field type</string>
       </property>
      </row>
     </widget>

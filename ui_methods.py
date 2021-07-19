@@ -51,8 +51,9 @@ class InputDialog(QtWidgets.QDialog):
                 for field in metadata['results'][0]['fields']:
                     column_position = self.schemaTableWidget.columnCount()
                     self.schemaTableWidget.insertColumn(column_position)
-                    self.schemaTableWidget.setItem(0, column_position, QtWidgets.QTableWidgetItem(field['name']))
-                    self.schemaTableWidget.setItem(1, column_position, QtWidgets.QTableWidgetItem(field['type']))
+                    self.schemaTableWidget.setItem(0, column_position, QtWidgets.QTableWidgetItem(field['label']))
+                    self.schemaTableWidget.setItem(1, column_position, QtWidgets.QTableWidgetItem(field['name']))
+                    self.schemaTableWidget.setItem(2, column_position, QtWidgets.QTableWidgetItem(field['type']))
             except helper_functions.DatasetError:
                 QtWidgets.QMessageBox.information(None, "ERROR:", "This dataset is private. "
                                                                   "You need an API key to access it.")

@@ -11,7 +11,7 @@ V2_API_CHUNK_SIZE = 100
 
 
 def import_dataset_list(domain_url, apikey):
-    params = {'limit': V2_API_CHUNK_SIZE}
+    params = {'limit': V2_API_CHUNK_SIZE, 'order_by': 'dataset_id'}
     if apikey:
         params['apikey'] = apikey
     try:
