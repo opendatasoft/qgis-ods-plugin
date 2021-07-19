@@ -30,10 +30,10 @@ class InputDialog(QtWidgets.QDialog):
         try:
             if self.apikey():
                 dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
-                    remove_http(self.domain()), self.apikey()))
+                    remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked()))
             else:
                 dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
-                    remove_http(self.domain()), None))
+                    remove_http(self.domain()), None, self.nonGeoCheckBox.isChecked()))
             self.datasetListComboBox.addItems(dataset_id_list)
         except helper_functions.DomainError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
@@ -124,6 +124,7 @@ class InputDialog(QtWidgets.QDialog):
         self.domainInput.setText(ods_cache['domain'])
         if apikey:
             self.apikeyInput.setText(apikey)
+        self.nonGeoCheckBox.setChecked(ods_cache['include_non_geo_dataset'])
         self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
         self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
         self.defaultGeomCheckBox.setChecked(ods_cache['default_geom_column'])
@@ -154,7 +155,8 @@ class InputDialog(QtWidgets.QDialog):
             helper_functions.load_dataset_to_qgis(path, self.dataset_id(), imported_dataset)
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
             dataset_index = self.datasetListComboBox.currentIndex()
-            ods_cache = {'domain': self.domain(), 'dataset_id': {'items': all_datasets, 'index': dataset_index},
+            ods_cache = {'domain': self.domain(), 'include_non_geo_dataset': self.nonGeoCheckBox.isChecked(),
+                         'dataset_id': {'items': all_datasets, 'index': dataset_index},
                          'default_geom_column': self.defaultGeomCheckBox.isChecked(), 'params': self.params(),
                          'path': self.path()}
             settings.setValue('ods_cache', ods_cache)

@@ -10,8 +10,10 @@ V2_QUERY_SIZE_LIMIT = 10000
 V2_API_CHUNK_SIZE = 100
 
 
-def import_dataset_list(domain_url, apikey):
+def import_dataset_list(domain_url, apikey, include_non_geo_dataset):
     params = {'limit': V2_API_CHUNK_SIZE, 'order_by': 'dataset_id'}
+    if not include_non_geo_dataset:
+        params['where'] = "features='geo'"
     if apikey:
         params['apikey'] = apikey
     try:
