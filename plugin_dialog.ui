@@ -17,7 +17,7 @@
    <item row="26" column="0">
     <widget class="QLabel" name="pathLabel">
      <property name="text">
-      <string>Full path of the dataset :</string>
+      <string>Full path of the dataset:</string>
      </property>
     </widget>
    </item>
@@ -81,21 +81,21 @@ to update the possible datasets.</string>
    <item row="7" column="0">
     <widget class="QLabel" name="textSearchLabel">
      <property name="text">
-      <string>Add a text search :</string>
+      <string>Add a text search:</string>
      </property>
     </widget>
    </item>
    <item row="17" column="0">
     <widget class="QLabel" name="selectLabel">
      <property name="text">
-      <string>Add a select statement :</string>
+      <string>Add a select statement:</string>
      </property>
     </widget>
    </item>
    <item row="11" column="0">
     <widget class="QLabel" name="datasetLabel">
      <property name="text">
-      <string>Dataset identifier :</string>
+      <string>Dataset identifier:</string>
      </property>
     </widget>
    </item>
@@ -112,17 +112,20 @@ to update the possible datasets.</string>
    <item row="20" column="0">
     <widget class="QLabel" name="whereLabel">
      <property name="text">
-      <string>Add a where statement :</string>
+      <string>Add a where statement:</string>
      </property>
     </widget>
    </item>
    <item row="24" column="0">
     <widget class="QLabel" name="limitLabel">
+     <property name="mouseTracking">
+      <bool>false</bool>
+     </property>
      <property name="lineWidth">
       <number>1</number>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Add a limit statement :&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>Add a limit statement:</string>
      </property>
     </widget>
    </item>
@@ -146,14 +149,14 @@ to update the possible datasets.</string>
    <item row="6" column="0">
     <widget class="QLabel" name="apikeyLabel">
      <property name="text">
-      <string>(Optional) API key :</string>
+      <string>(Optional) API key:</string>
      </property>
     </widget>
    </item>
    <item row="22" column="0">
     <widget class="QLabel" name="orderByLabel">
      <property name="text">
-      <string>Add an order_by statement :</string>
+      <string>Add an order_by statement:</string>
      </property>
     </widget>
    </item>

@@ -16,6 +16,7 @@ def import_dataset_list(domain_url, apikey, include_non_geo_dataset, text_search
         params['apikey'] = apikey
     if text_search_param:
         params['where'] = ['"{}"'.format(text_search_param)]
+        params.pop('order_by')
     if not include_non_geo_dataset:
         if 'where' in params:
             params['where'].append("features='geo'")
