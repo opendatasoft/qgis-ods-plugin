@@ -29,7 +29,7 @@ class InputDialog(QtWidgets.QDialog):
         self.datasetListComboBox.clear()
         try:
             dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
-                    remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
+                remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
             self.datasetListComboBox.addItems(dataset_id_list)
         except helper_functions.DomainError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
@@ -53,6 +53,9 @@ class InputDialog(QtWidgets.QDialog):
             except helper_functions.DatasetError:
                 QtWidgets.QMessageBox.information(None, "ERROR:", "This dataset is private. "
                                                                   "You need an API key to access it.")
+            self.filterGroupBox.setEnabled(True)
+        else:
+            self.filterGroupBox.setEnabled(False)
 
     def getFilePath(self):
         fileDialog = QtWidgets.QFileDialog(self)
