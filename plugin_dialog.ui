@@ -161,9 +161,6 @@ to update the possible datasets.</string>
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="limitLabel">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
         <property name="mouseTracking">
          <bool>false</bool>
         </property>
@@ -211,11 +208,7 @@ to update the possible datasets.</string>
        </widget>
       </item>
       <item row="4" column="1" colspan="2">
-       <widget class="QLineEdit" name="limitInput">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
+       <widget class="QLineEdit" name="limitInput"/>
       </item>
       <item row="1" column="1" colspan="2">
        <widget class="QLineEdit" name="selectInput">
