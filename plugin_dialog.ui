@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>751</width>
-    <height>520</height>
+    <height>521</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>0</height>
+       <height>100</height>
       </size>
      </property>
      <property name="maximumSize">
@@ -123,13 +123,13 @@ to update the possible datasets.</string>
    <item row="27" column="0" colspan="3">
     <widget class="QGroupBox" name="filterGroupBox">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="styleSheet">
       <string notr="true"/>
      </property>
      <property name="title">
-      <string/>
+      <string>Add filters to your query :</string>
      </property>
      <property name="flat">
       <bool>true</bool>

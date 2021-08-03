@@ -17,6 +17,8 @@ class InputDialog(QtWidgets.QDialog):
         for button in self.dialogButtonBox.buttons():
             button.setDefault(False)
         self.filePathButton.clicked.connect(self.getFilePath)
+        self.filterGroupBox.setVisible(False)
+        self.resize(750,300)
         self.updateListButton.clicked.connect(self.updateListButtonPressed)
         self.datasetListComboBox.setEditable(True)
         self.datasetListComboBox.currentIndexChanged.connect(self.updateSchemaTable)
@@ -53,9 +55,9 @@ class InputDialog(QtWidgets.QDialog):
             except helper_functions.DatasetError:
                 QtWidgets.QMessageBox.information(None, "ERROR:", "This dataset is private. "
                                                                   "You need an API key to access it.")
-            self.filterGroupBox.setEnabled(True)
+            self.filterGroupBox.setVisible(True)
         else:
-            self.filterGroupBox.setEnabled(False)
+            self.filterGroupBox.setVisible(False)
 
     def getFilePath(self):
         fileDialog = QtWidgets.QFileDialog(self)
