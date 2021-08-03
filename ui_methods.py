@@ -28,12 +28,8 @@ class InputDialog(QtWidgets.QDialog):
     def updateListButtonPressed(self):
         self.datasetListComboBox.clear()
         try:
-            if self.apikey():
-                dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
-                    remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked()))
-            else:
-                dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
-                    remove_http(self.domain()), None, self.nonGeoCheckBox.isChecked()))
+            dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
+                    remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
             self.datasetListComboBox.addItems(dataset_id_list)
         except helper_functions.DomainError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
@@ -73,13 +69,17 @@ class InputDialog(QtWidgets.QDialog):
         return remove_http(url)
 
     def apikey(self):
-        return self.apikeyInput.text()
+        if self.apikeyInput.text():
+            return self.apikeyInput.text()
+        return None
+
+    def text_search(self):
+        if self.textSearchInput.text():
+            return self.textSearchInput.text()
+        return None
 
     def dataset_id(self):
         return self.datasetListComboBox.currentText()
-
-    def number_of_lines(self):
-        return self.numberOfLinesInput.text()
 
     def params(self):
         params = {}
@@ -124,6 +124,8 @@ class InputDialog(QtWidgets.QDialog):
         self.domainInput.setText(ods_cache['domain'])
         if apikey:
             self.apikeyInput.setText(apikey)
+        if ods_cache['text_search']:
+            self.textSearchInput.setText(ods_cache['text_search'])
         self.nonGeoCheckBox.setChecked(ods_cache['include_non_geo_dataset'])
         self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
         self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
@@ -156,6 +158,7 @@ class InputDialog(QtWidgets.QDialog):
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
             dataset_index = self.datasetListComboBox.currentIndex()
             ods_cache = {'domain': self.domain(), 'include_non_geo_dataset': self.nonGeoCheckBox.isChecked(),
+                         'text_search': self.text_search(),
                          'dataset_id': {'items': all_datasets, 'index': dataset_index},
                          'default_geom_column': self.defaultGeomCheckBox.isChecked(), 'params': self.params(),
                          'path': self.path()}

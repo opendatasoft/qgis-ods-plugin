@@ -10,12 +10,19 @@ V2_QUERY_SIZE_LIMIT = 10000
 V2_API_CHUNK_SIZE = 100
 
 
-def import_dataset_list(domain_url, apikey, include_non_geo_dataset):
+def import_dataset_list(domain_url, apikey, include_non_geo_dataset, text_search_param):
     params = {'limit': V2_API_CHUNK_SIZE, 'order_by': 'dataset_id'}
-    if not include_non_geo_dataset:
-        params['where'] = "features='geo'"
     if apikey:
         params['apikey'] = apikey
+    if text_search_param:
+        params['where'] = ['"{}"'.format(text_search_param)]
+        params.pop('order_by')
+    if not include_non_geo_dataset:
+        if 'where' in params:
+            params['where'].append("features='geo'")
+        else:
+            params['where'] = "features='geo'"
+
     try:
         first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
         if first_query.status_code == 404:
@@ -39,7 +46,7 @@ def datasets_to_dataset_id_list(json_dataset):
 
 
 def import_dataset_metadata(domain_url, dataset_id, apikey):
-    params = {'where': 'datasetid:"' + dataset_id + '"'}
+    params = {'where': 'datasetid:"{}"'.format(dataset_id)}
     if apikey:
         params['apikey'] = apikey
     try:
@@ -59,7 +66,6 @@ def get_geom_column(metadata):
         if field['type'] == 'geo_point_2d':
             return field['name']
     return None
-
 
 
 def create_new_ods_auth_config(apikey):
@@ -97,9 +103,8 @@ def get_apikey_from_cache():
             apikey = aux_config.configMap()['token']
     return apikey
 
-  
-def import_dataset_to_qgis(domain, dataset_id, params):
 
+def import_dataset_to_qgis(domain, dataset_id, params):
     try:
         params_no_limit = dict(params)
         if 'limit' in params_no_limit.keys():
@@ -129,7 +134,7 @@ def import_dataset_to_qgis(domain, dataset_id, params):
                                     params, stream=True)
     return imported_dataset
 
-  
+
 def load_dataset_to_qgis(path, dataset_id, imported_dataset):
     from qgis.core import QgsProject, QgsVectorLayer
 
