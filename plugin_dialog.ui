@@ -6,70 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>751</width>
-    <height>521</height>
+    <width>684</width>
+    <height>565</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Import an ODS dataset</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="14" column="0" colspan="3">
-    <widget class="QTableWidget" name="schemaTableWidget">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>100</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>100</height>
-      </size>
-     </property>
-     <attribute name="horizontalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
-     <row>
-      <property name="text">
-       <string>Label</string>
-      </property>
-     </row>
-     <row>
-      <property name="text">
-       <string>Field name</string>
-      </property>
-     </row>
-     <row>
-      <property name="text">
-       <string>Field type</string>
-      </property>
-     </row>
-    </widget>
-   </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="textSearchLabel">
-     <property name="text">
-      <string>Add a text search:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="2">
-    <widget class="QCheckBox" name="nonGeoCheckBox">
-     <property name="text">
-      <string>Include non-geo datasets</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="2">
-    <widget class="QPushButton" name="updateListButton">
-     <property name="text">
-      <string>Update dataset list</string>
-     </property>
-    </widget>
-   </item>
-   <item row="30" column="1" colspan="2">
+   <item row="32" column="1" colspan="2">
     <widget class="QDialogButtonBox" name="dialogButtonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -79,57 +24,60 @@
      </property>
     </widget>
    </item>
-   <item row="11" column="0">
-    <widget class="QLabel" name="datasetLabel">
-     <property name="text">
-      <string>Dataset identifier:</string>
-     </property>
+   <item row="16" column="0" colspan="3">
+    <widget class="QWidget" name="metadataWidget" native="true">
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="showFilterCheckBox">
+        <property name="text">
+         <string>Add filters to your query</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QTableWidget" name="schemaTableWidget">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>100</height>
+         </size>
+        </property>
+        <attribute name="horizontalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <row>
+         <property name="text">
+          <string>Label</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>Field name</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>Field type</string>
+         </property>
+        </row>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item row="5" column="1">
-    <widget class="QLineEdit" name="domainInput">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="placeholderText">
-      <string>domain.opendatasoft.com</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="domainLabel">
-     <property name="text">
-      <string>Choose a domain name, then click on the button 
-to update the possible datasets.</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="1" colspan="2">
-    <widget class="QLineEdit" name="apikeyInput"/>
-   </item>
-   <item row="11" column="1" colspan="2">
-    <widget class="QComboBox" name="datasetListComboBox"/>
-   </item>
-   <item row="7" column="1">
-    <widget class="QLineEdit" name="textSearchInput"/>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="apikeyLabel">
-     <property name="text">
-      <string>(Optional) API key:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="27" column="0" colspan="3">
+   <item row="28" column="0" rowspan="2" colspan="3">
     <widget class="QGroupBox" name="filterGroupBox">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
      <property name="styleSheet">
       <string notr="true"/>
      </property>
      <property name="title">
-      <string>Add filters to your query :</string>
+      <string/>
      </property>
      <property name="flat">
       <bool>true</bool>
@@ -226,6 +174,68 @@ to update the possible datasets.</string>
       </item>
      </layout>
     </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="domainLabel">
+     <property name="text">
+      <string>Choose a domain name, then click on the button 
+to update the possible datasets.</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QCheckBox" name="nonGeoCheckBox">
+     <property name="text">
+      <string>Include non-geo datasets</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="domainInput">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>domain.opendatasoft.com</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QPushButton" name="updateListButton">
+     <property name="text">
+      <string>Update dataset list</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="apikeyLabel">
+     <property name="text">
+      <string>(Optional) API key:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="2">
+    <widget class="QLineEdit" name="apikeyInput"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="textSearchInput"/>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="textSearchLabel">
+     <property name="text">
+      <string>Add a text search:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="datasetLabel">
+     <property name="text">
+      <string>Dataset identifier:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1" colspan="2">
+    <widget class="QComboBox" name="datasetListComboBox"/>
    </item>
   </layout>
  </widget>
