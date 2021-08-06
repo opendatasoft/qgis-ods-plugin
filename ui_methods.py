@@ -27,6 +27,7 @@ class InputDialog(QtWidgets.QDialog):
         self.datasetListComboBox.setEditable(True)
         self.datasetListComboBox.currentIndexChanged.connect(self.updateSchemaTable)
         self.schemaTableWidget.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+        self.clearFiltersButton.clicked.connect(self.clearFilters)
         self.dialogButtonBox.accepted.connect(self.importDataset)
 
         self.show()
@@ -73,6 +74,12 @@ class InputDialog(QtWidgets.QDialog):
         if not self.showFilterCheckBox.isChecked():
             QCoreApplication.processEvents()
             self.resize(750, 0)
+
+    def clearFilters(self):
+        self.selectInput.setText('')
+        self.whereInput.setText('')
+        self.orderByInput.setText('')
+        self.limitInput.setText('')
 
     def getFilePath(self):
         fileDialog = QtWidgets.QFileDialog(self)

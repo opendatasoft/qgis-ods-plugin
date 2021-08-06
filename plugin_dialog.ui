@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>684</width>
-    <height>665</height>
+    <height>616</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -210,6 +210,13 @@ to update the possible datasets.</string>
        <widget class="QLineEdit" name="whereInput">
         <property name="placeholderText">
          <string>columnA:valueA</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="clearFiltersButton">
+        <property name="text">
+         <string>Clear filters</string>
         </property>
        </widget>
       </item>
