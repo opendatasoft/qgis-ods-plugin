@@ -2,6 +2,7 @@ import os
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QSettings
+from PyQt5.QtCore import QCoreApplication
 
 from . import helper_functions
 
@@ -17,6 +18,10 @@ class InputDialog(QtWidgets.QDialog):
         for button in self.dialogButtonBox.buttons():
             button.setDefault(False)
         self.filePathButton.clicked.connect(self.getFilePath)
+        self.metadataWidget.setVisible(False)
+        self.filterGroupBox.setVisible(False)
+        self.showFilterCheckBox.stateChanged.connect(self.showFilterUI)
+        self.resize(750, 0)
         self.updateListButton.clicked.connect(self.updateListButtonPressed)
         self.datasetListComboBox.setEditable(True)
         self.datasetListComboBox.currentIndexChanged.connect(self.updateSchemaTable)
@@ -29,7 +34,7 @@ class InputDialog(QtWidgets.QDialog):
         self.datasetListComboBox.clear()
         try:
             dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
-                    remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
+                remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
             self.datasetListComboBox.addItems(dataset_id_list)
         except helper_functions.DomainError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
@@ -53,6 +58,19 @@ class InputDialog(QtWidgets.QDialog):
             except helper_functions.DatasetError:
                 QtWidgets.QMessageBox.information(None, "ERROR:", "This dataset is private. "
                                                                   "You need an API key to access it.")
+            self.metadataWidget.setVisible(True)
+
+        else:
+            self.metadataWidget.setVisible(False)
+            self.showFilterCheckBox.setChecked(False)
+            QCoreApplication.processEvents()
+            self.resize(750, 0)
+
+    def showFilterUI(self):
+        self.filterGroupBox.setVisible(self.showFilterCheckBox.isChecked())
+        QCoreApplication.processEvents()
+        if not self.showFilterCheckBox.isChecked():
+            self.resize(750, 0)
 
     def getFilePath(self):
         fileDialog = QtWidgets.QFileDialog(self)
@@ -129,6 +147,7 @@ class InputDialog(QtWidgets.QDialog):
         self.nonGeoCheckBox.setChecked(ods_cache['include_non_geo_dataset'])
         self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
         self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
+        self.showFilterCheckBox.setChecked(ods_cache['are_filters_shown'])
         self.defaultGeomCheckBox.setChecked(ods_cache['default_geom_column'])
         if 'select' in ods_cache['params']:
             self.selectInput.setText(ods_cache['params']['select'])
@@ -160,8 +179,9 @@ class InputDialog(QtWidgets.QDialog):
             ods_cache = {'domain': self.domain(), 'include_non_geo_dataset': self.nonGeoCheckBox.isChecked(),
                          'text_search': self.text_search(),
                          'dataset_id': {'items': all_datasets, 'index': dataset_index},
-                         'default_geom_column': self.defaultGeomCheckBox.isChecked(), 'params': self.params(),
-                         'path': self.path()}
+                         'default_geom_column': self.defaultGeomCheckBox.isChecked(),
+                         'are_filters_shown': self.showFilterCheckBox.isChecked(),
+                         'params': self.params(), 'path': self.path()}
             settings.setValue('ods_cache', ods_cache)
 
             if self.apikey():
