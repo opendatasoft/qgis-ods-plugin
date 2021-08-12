@@ -146,9 +146,12 @@ def load_dataset_to_qgis(path, dataset_id, imported_dataset):
             file.close()
             file_path = file.name
         with open(file_path, 'wb') as f:
+            chunk_number = 0
             for chunk in imported_dataset.iter_content(chunk_size=1024):
                 f.write(chunk)
+                chunk_number += 1
                 QCoreApplication.processEvents()
+                cancelImportDialog.chunkLabel.setText('Loading chunk n°{}'.format(chunk_number))
                 if cancelImportDialog.isCanceled:
                     return
 
