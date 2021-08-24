@@ -2,7 +2,7 @@ import tempfile
 
 import requests
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import QCoreApplication, QElapsedTimer
 
 from . import ui_methods
 
@@ -145,15 +145,21 @@ def load_dataset_to_qgis(path, dataset_id, imported_dataset):
             file = tempfile.NamedTemporaryFile(suffix='.geojson')
             file.close()
             file_path = file.name
+        downloaded = 0
+        timer = QElapsedTimer()
+        timer.start()
         with open(file_path, 'wb') as f:
-            chunk_number = 0
-            for chunk in imported_dataset.iter_content(chunk_size=1024):
+            for chunk in imported_dataset.iter_content(chunk_size=1024 * 64):
                 f.write(chunk)
-                chunk_number += 1
+                downloaded += len(chunk)
                 QCoreApplication.processEvents()
-                cancelImportDialog.chunkLabel.setText('Loading chunk n°{}'.format(chunk_number))
+                cancelImportDialog.chunkLabel.setText(
+                    'Downloaded: {}MB\nSpeed: {:.2f}kB/s'.format(
+                        downloaded // 1024 // 1024,
+                        (downloaded / 1024) / (timer.elapsed() / 1000)))
                 if cancelImportDialog.isCanceled:
                     return
+
 
     except FileNotFoundError:
         raise FileNotFoundError
