@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>684</width>
-    <height>589</height>
+    <height>620</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,13 +27,6 @@
    <item row="16" column="0" colspan="3">
     <widget class="QWidget" name="metadataWidget" native="true">
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="showFilterCheckBox">
-        <property name="text">
-         <string>Add filters to your query</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="datasetNameLabel">
         <property name="text">
@@ -41,14 +34,21 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QLabel" name="publisherLabel">
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="showFilterCheckBox">
         <property name="text">
-         <string>Publisher: </string>
+         <string>Add filters to your query</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="2">
+      <item row="0" column="1">
+       <widget class="QLabel" name="recordsNumberLabel">
+        <property name="text">
+         <string>Number of records:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
        <widget class="QTableWidget" name="schemaTableWidget">
         <property name="minimumSize">
          <size>
@@ -80,6 +80,13 @@
           <string>Field type</string>
          </property>
         </row>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="publisherLabel">
+        <property name="text">
+         <string>Publisher: </string>
+        </property>
        </widget>
       </item>
      </layout>
