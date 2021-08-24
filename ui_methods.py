@@ -20,12 +20,14 @@ class InputDialog(QtWidgets.QDialog):
         self.filePathButton.clicked.connect(self.getFilePath)
         self.metadataWidget.setVisible(False)
         self.filterGroupBox.setVisible(False)
+        self.saveWidget.setVisible(False)
         self.showFilterCheckBox.stateChanged.connect(self.showFilterUI)
         self.resize(750, 0)
         self.updateListButton.clicked.connect(self.updateListButtonPressed)
         self.datasetListComboBox.setEditable(True)
         self.datasetListComboBox.currentIndexChanged.connect(self.updateSchemaTable)
         self.schemaTableWidget.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+        self.clearFiltersButton.clicked.connect(self.clearFilters)
         self.dialogButtonBox.accepted.connect(self.importDataset)
 
         self.show()
@@ -62,18 +64,25 @@ class InputDialog(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.information(None, "ERROR:", "This dataset is private. "
                                                                   "You need an API key to access it.")
             self.metadataWidget.setVisible(True)
-
+            self.saveWidget.setVisible(True)
         else:
             self.metadataWidget.setVisible(False)
             self.showFilterCheckBox.setChecked(False)
+            self.saveWidget.setVisible(False)
             QCoreApplication.processEvents()
             self.resize(750, 0)
 
     def showFilterUI(self):
         self.filterGroupBox.setVisible(self.showFilterCheckBox.isChecked())
-        QCoreApplication.processEvents()
         if not self.showFilterCheckBox.isChecked():
+            QCoreApplication.processEvents()
             self.resize(750, 0)
+
+    def clearFilters(self):
+        self.selectInput.setText('')
+        self.whereInput.setText('')
+        self.orderByInput.setText('')
+        self.limitInput.setText('')
 
     def getFilePath(self):
         fileDialog = QtWidgets.QFileDialog(self)
@@ -170,28 +179,33 @@ class InputDialog(QtWidgets.QDialog):
                                                               "dataset.")
             return
         path = self.path()
-        params = self.params()
+        if self.showFilterCheckBox.isChecked():
+            params = self.params()
+        else:
+            params = {}
         if self.apikey():
             params['apikey'] = self.apikey()
         try:
-            imported_dataset = helper_functions.import_dataset_to_qgis(self.domain(), self.dataset_id(), self.params())
+            imported_dataset = helper_functions.import_dataset_to_qgis(self.domain(), self.dataset_id(), params)
             self.setVisible(False)
             helper_functions.load_dataset_to_qgis(path, self.dataset_id(), imported_dataset)
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
             dataset_index = self.datasetListComboBox.currentIndex()
+
+            if self.apikey():
+                params.pop('apikey')
+                if self.apikey() != helper_functions.get_apikey_from_cache():
+                    helper_functions.create_new_ods_auth_config(self.apikey())
+            else:
+                helper_functions.remove_ods_auth_config()
+
             ods_cache = {'domain': self.domain(), 'include_non_geo_dataset': self.nonGeoCheckBox.isChecked(),
                          'text_search': self.text_search(),
                          'dataset_id': {'items': all_datasets, 'index': dataset_index},
                          'default_geom_column': self.defaultGeomCheckBox.isChecked(),
                          'are_filters_shown': self.showFilterCheckBox.isChecked(),
-                         'params': self.params(), 'path': self.path()}
+                         'params': params, 'path': self.path()}
             settings.setValue('ods_cache', ods_cache)
-
-            if self.apikey():
-                if self.apikey() != helper_functions.get_apikey_from_cache():
-                    helper_functions.create_new_ods_auth_config(self.apikey())
-            else:
-                helper_functions.remove_ods_auth_config()
 
             self.close()
         except helper_functions.OdsqlError:
