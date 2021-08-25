@@ -22,7 +22,7 @@ class InputDialog(QtWidgets.QDialog):
         self.filterGroupBox.setVisible(False)
         self.saveWidget.setVisible(False)
         self.showFilterCheckBox.stateChanged.connect(self.showFilterUI)
-        self.resize(750, 0)
+        self.resize(self.width(), 0)
         self.updateListButton.clicked.connect(self.updateListButtonPressed)
         self.datasetListComboBox.setEditable(True)
         self.datasetListComboBox.currentIndexChanged.connect(self.updateSchemaTable)
@@ -69,13 +69,13 @@ class InputDialog(QtWidgets.QDialog):
             self.showFilterCheckBox.setChecked(False)
             self.saveWidget.setVisible(False)
             QCoreApplication.processEvents()
-            self.resize(750, 0)
+            self.resize(self.width(), 0)
 
     def showFilterUI(self):
         self.filterGroupBox.setVisible(self.showFilterCheckBox.isChecked())
         if not self.showFilterCheckBox.isChecked():
             QCoreApplication.processEvents()
-            self.resize(750, 0)
+            self.resize(self.width(), 0)
 
     def clearFilters(self):
         self.selectInput.setText('')
@@ -151,15 +151,21 @@ class InputDialog(QtWidgets.QDialog):
 
     def push_ods_cache(self, ods_cache, apikey):
         self.domainInput.setText(ods_cache['domain'])
-        if apikey:
-            self.apikeyInput.setText(apikey)
         if ods_cache['text_search']:
             self.textSearchInput.setText(ods_cache['text_search'])
         self.nonGeoCheckBox.setChecked(ods_cache['include_non_geo_dataset'])
-        self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
-        self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
         self.showFilterCheckBox.setChecked(ods_cache['are_filters_shown'])
         self.defaultGeomCheckBox.setChecked(ods_cache['default_geom_column'])
+        if apikey:
+            if ods_cache['store_apikey_in_cache']:
+                self.apikeyCacheCheckBox.setChecked(True)
+                self.apikeyInput.setText(apikey)
+                self.updateListButtonPressed()
+                self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
+        else:
+            if 'dataset_id' in ods_cache:
+                self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
+                self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
         if 'select' in ods_cache['params']:
             self.selectInput.setText(ods_cache['params']['select'])
         if 'where' in ods_cache['params']:
@@ -193,17 +199,22 @@ class InputDialog(QtWidgets.QDialog):
 
             if self.apikey():
                 params.pop('apikey')
-                if self.apikey() != helper_functions.get_apikey_from_cache():
+                if self.apikey() != helper_functions.get_apikey_from_cache() and self.apikeyCacheCheckBox.isChecked():
                     helper_functions.create_new_ods_auth_config(self.apikey())
+
             else:
                 helper_functions.remove_ods_auth_config()
 
             ods_cache = {'domain': self.domain(), 'include_non_geo_dataset': self.nonGeoCheckBox.isChecked(),
                          'text_search': self.text_search(),
-                         'dataset_id': {'items': all_datasets, 'index': dataset_index},
+                         'store_apikey_in_cache': self.apikeyCacheCheckBox.isChecked(),
+                         'dataset_id': {'index': dataset_index},
                          'default_geom_column': self.defaultGeomCheckBox.isChecked(),
                          'are_filters_shown': self.showFilterCheckBox.isChecked(),
                          'params': params, 'path': self.path()}
+
+            if not self.apikey():
+                ods_cache['dataset_id'] = {'items': all_datasets}
             settings.setValue('ods_cache', ods_cache)
 
             self.close()
