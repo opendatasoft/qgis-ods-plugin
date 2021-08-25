@@ -30,8 +30,7 @@
    <item row="0" column="0">
     <widget class="QLabel" name="domainLabel">
      <property name="text">
-      <string>Choose a domain name, then click on the button 
-to update the possible datasets.</string>
+      <string>Domain name:</string>
      </property>
     </widget>
    </item>
@@ -92,7 +91,7 @@ to update the possible datasets.</string>
    <item row="2" column="0">
     <widget class="QLabel" name="textSearchLabel">
      <property name="text">
-      <string>Add a text search:</string>
+      <string>(Optional) Text search:</string>
      </property>
     </widget>
    </item>
@@ -148,7 +147,7 @@ to update the possible datasets.</string>
       <item row="3" column="0">
        <widget class="QLabel" name="orderByLabel">
         <property name="text">
-         <string>Add an order_by statement:                                      </string>
+         <string>Order_by:</string>
         </property>
        </widget>
       </item>
@@ -171,21 +170,21 @@ to update the possible datasets.</string>
          <number>1</number>
         </property>
         <property name="text">
-         <string>Add a limit statement:</string>
+         <string>Limit:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="selectLabel">
         <property name="text">
-         <string>Add a select statement:</string>
+         <string>Select:</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="whereLabel">
         <property name="text">
-         <string>Add a where statement:</string>
+         <string>Where:</string>
         </property>
        </widget>
       </item>
