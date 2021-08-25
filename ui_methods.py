@@ -40,6 +40,8 @@ class InputDialog(QtWidgets.QDialog):
             self.datasetListComboBox.addItems(dataset_id_list)
         except helper_functions.DomainError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
+        except helper_functions.AccessError:
+            QtWidgets.QMessageBox.information(None, "ERROR:", "This apikey to search for datasets is wrong.")
 
     def updateSchemaTable(self):
         if self.datasetListComboBox.currentText():
