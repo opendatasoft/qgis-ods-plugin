@@ -53,6 +53,9 @@ class InputDialog(QtWidgets.QDialog):
                 else:
                     metadata = helper_functions.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
                                                                         None)
+                self.datasetNameLabel.setText("Dataset name: {}".format(metadata['results'][0]['default']['title']))
+                self.publisherLabel.setText("Publisher: {}".format(metadata['results'][0]['default']['publisher']))
+                self.recordsNumberLabel.setText("Number of records: {}".format(metadata['results'][0]['default']['records_count']))
                 for field in metadata['results'][0]['fields']:
                     column_position = self.schemaTableWidget.columnCount()
                     self.schemaTableWidget.insertColumn(column_position)
