@@ -201,7 +201,6 @@ class InputDialog(QtWidgets.QDialog):
                 params.pop('apikey')
                 if self.apikey() != helper_functions.get_apikey_from_cache() and self.apikeyCacheCheckBox.isChecked():
                     helper_functions.create_new_ods_auth_config(self.apikey())
-
             else:
                 helper_functions.remove_ods_auth_config()
 
@@ -214,7 +213,7 @@ class InputDialog(QtWidgets.QDialog):
                          'params': params, 'path': self.path()}
 
             if not self.apikey():
-                ods_cache['dataset_id'] = {'items': all_datasets}
+                ods_cache['dataset_id']['items'] = all_datasets
             settings.setValue('ods_cache', ods_cache)
 
             self.close()
