@@ -162,7 +162,6 @@ def load_dataset_to_qgis(path, dataset_id, imported_dataset):
                 if cancelImportDialog.isCanceled:
                     return
 
-
     except FileNotFoundError:
         raise FileNotFoundError
     except PermissionError:

@@ -25,7 +25,10 @@ class QgisOdsPlugin:
         dialog = ui_methods.InputDialog(self.iface)
         settings = QSettings()
         if 'ods_cache' in settings.allKeys():
-            apikey = helper_functions.get_apikey_from_cache()
-            dialog.push_ods_cache(settings.value('ods_cache'), apikey)
+            try:
+                apikey = helper_functions.get_apikey_from_cache()
+                dialog.push_ods_cache(settings.value('ods_cache'), apikey)
+            except KeyError:
+                pass
         if dialog.exec():
             pass

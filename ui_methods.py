@@ -166,9 +166,8 @@ class InputDialog(QtWidgets.QDialog):
                 self.updateListButtonPressed()
                 self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
         else:
-            if 'dataset_id' in ods_cache:
-                self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
-                self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
+            self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
+            self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
         if 'select' in ods_cache['params']:
             self.selectInput.setText(ods_cache['params']['select'])
         if 'where' in ods_cache['params']:
@@ -216,7 +215,7 @@ class InputDialog(QtWidgets.QDialog):
                          'params': params, 'path': self.path()}
 
             if not self.apikey():
-                ods_cache['dataset_id']['items'] = all_datasets
+                ods_cache['dataset_id'] = {'items': all_datasets, 'index': dataset_index}
             settings.setValue('ods_cache', ods_cache)
 
             self.close()
