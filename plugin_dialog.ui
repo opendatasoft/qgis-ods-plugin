@@ -14,7 +14,34 @@
    <string>Import an ODS dataset</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="17" column="0" colspan="3">
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="domainInput">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>domain.opendatasoft.com</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="2">
+    <widget class="QLineEdit" name="apikeyInput"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="domainLabel">
+     <property name="text">
+      <string>Domain name:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QCheckBox" name="nonGeoCheckBox">
+     <property name="text">
+      <string>Include non-geo datasets</string>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="0" colspan="3">
     <widget class="QWidget" name="metadataWidget" native="true">
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="0" column="0">
@@ -85,7 +112,7 @@
    <item row="4" column="0">
     <widget class="QLabel" name="datasetLabel">
      <property name="text">
-      <string>Dataset identifier:</string>
+      <string>(Optional) Text search:</string>
      </property>
     </widget>
    </item>
@@ -173,7 +200,7 @@
       <item row="3" column="0">
        <widget class="QLabel" name="orderByLabel">
         <property name="text">
-         <string>Add an order_by statement:                                      </string>
+         <string>Order_by:</string>
         </property>
        </widget>
       </item>
@@ -196,21 +223,21 @@
          <number>1</number>
         </property>
         <property name="text">
-         <string>Add a limit statement:</string>
+         <string>Limit:</string>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="selectLabel">
         <property name="text">
-         <string>Add a select statement:</string>
+         <string>Select:</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="whereLabel">
         <property name="text">
-         <string>Add a where statement:</string>
+         <string>Where:</string>
         </property>
        </widget>
       </item>
