@@ -2,7 +2,7 @@ import tempfile
 
 import requests
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import QCoreApplication, QElapsedTimer
 
 from . import ui_methods
 
@@ -27,6 +27,8 @@ def import_dataset_list(domain_url, apikey, include_non_geo_dataset, text_search
         first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
         if first_query.status_code == 404:
             raise DomainError
+        if first_query.status_code == 401:
+            raise AccessError
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
         raise DomainError
     json_dataset = first_query.json()
@@ -145,10 +147,18 @@ def load_dataset_to_qgis(path, dataset_id, imported_dataset):
             file = tempfile.NamedTemporaryFile(suffix='.geojson')
             file.close()
             file_path = file.name
+        downloaded = 0
+        timer = QElapsedTimer()
+        timer.start()
         with open(file_path, 'wb') as f:
-            for chunk in imported_dataset.iter_content(chunk_size=1024):
+            for chunk in imported_dataset.iter_content(chunk_size=1024 * 64):
                 f.write(chunk)
+                downloaded += len(chunk)
                 QCoreApplication.processEvents()
+                cancelImportDialog.chunkLabel.setText(
+                    'Downloaded: {}MB\nSpeed: {:.2f}kB/s'.format(
+                        downloaded // 1024 // 1024,
+                        (downloaded / 1024) / (timer.elapsed() / 1000)))
                 if cancelImportDialog.isCanceled:
                     return
 
