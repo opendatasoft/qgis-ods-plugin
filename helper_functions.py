@@ -27,6 +27,8 @@ def import_dataset_list(domain_url, apikey, include_non_geo_dataset, text_search
         first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
         if first_query.status_code == 404:
             raise DomainError
+        if first_query.status_code == 401:
+            raise AccessError
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
         raise DomainError
     json_dataset = first_query.json()
@@ -159,7 +161,6 @@ def load_dataset_to_qgis(path, dataset_id, imported_dataset):
                         (downloaded / 1024) / (timer.elapsed() / 1000)))
                 if cancelImportDialog.isCanceled:
                     return
-
 
     except FileNotFoundError:
         raise FileNotFoundError
