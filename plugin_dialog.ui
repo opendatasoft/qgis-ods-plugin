@@ -7,44 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>809</width>
-    <height>709</height>
+    <height>693</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Import an ODS dataset</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="32" column="1" colspan="2">
-    <widget class="QDialogButtonBox" name="dialogButtonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QCheckBox" name="nonGeoCheckBox">
-     <property name="text">
-      <string>Include non-geo datasets</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="textSearchLabel">
-     <property name="text">
-      <string>(Optional) Text search:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="apikeyInput"/>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="textSearchInput"/>
-   </item>
-   <item row="28" column="0" rowspan="2" colspan="3">
+   <item row="29" column="0" rowspan="2" colspan="3">
     <widget class="QGroupBox" name="filterGroupBox">
      <property name="styleSheet">
       <string notr="true"/>
@@ -134,24 +104,7 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="2">
-    <widget class="QPushButton" name="updateListButton">
-     <property name="text">
-      <string>Update dataset list</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="domainLabel">
-     <property name="text">
-      <string>Domain name:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1" colspan="2">
-    <widget class="QComboBox" name="datasetListComboBox"/>
-   </item>
-   <item row="15" column="0" colspan="3">
+   <item row="16" column="0" colspan="3">
     <widget class="QWidget" name="metadataWidget" native="true">
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="0" column="0">
@@ -219,6 +172,28 @@
      </layout>
     </widget>
    </item>
+   <item row="1" column="2">
+    <widget class="QCheckBox" name="apikeyCacheCheckBox">
+     <property name="text">
+      <string>Store apikey in secure cache
+(you need a QGIS master password)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="datasetLabel">
+     <property name="text">
+      <string>Dataset identifier:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="textSearchLabel">
+     <property name="text">
+      <string>(Optional) Text search:</string>
+     </property>
+    </widget>
+   </item>
    <item row="1" column="0">
     <widget class="QLabel" name="apikeyLabel">
      <property name="text">
@@ -226,13 +201,13 @@
      </property>
     </widget>
    </item>
-   <item row="30" column="0" colspan="3">
+   <item row="31" column="0" colspan="3">
     <widget class="QWidget" name="saveWidget" native="true">
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
        <widget class="QLabel" name="pathLabel">
         <property name="text">
-         <string>Full path to save dataset:</string>
+         <string>(Optional) Full path to save dataset:</string>
         </property>
        </widget>
       </item>
@@ -265,6 +240,29 @@
      </layout>
     </widget>
    </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="domainLabel">
+     <property name="text">
+      <string>Domain address:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="apikeyInput"/>
+   </item>
+   <item row="4" column="1" colspan="2">
+    <widget class="QComboBox" name="datasetListComboBox"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="textSearchInput"/>
+   </item>
+   <item row="0" column="2">
+    <widget class="QCheckBox" name="nonGeoCheckBox">
+     <property name="text">
+      <string>Include non-geo datasets</string>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="1">
     <widget class="QLineEdit" name="domainInput">
      <property name="text">
@@ -275,18 +273,20 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="datasetLabel">
-     <property name="text">
-      <string>Dataset identifier:</string>
+   <item row="33" column="1" colspan="2">
+    <widget class="QDialogButtonBox" name="dialogButtonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
-   <item row="1" column="2">
-    <widget class="QCheckBox" name="apikeyCacheCheckBox">
+   <item row="3" column="1">
+    <widget class="QPushButton" name="updateListButton">
      <property name="text">
-      <string>Store apikey in secure cache
-(you need a QGIS master password)</string>
+      <string>Update dataset list</string>
      </property>
     </widget>
    </item>

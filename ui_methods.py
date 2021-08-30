@@ -17,7 +17,12 @@ class InputDialog(QtWidgets.QDialog):
 
         for button in self.dialogButtonBox.buttons():
             button.setDefault(False)
+            if button.text() == 'OK':
+                button.setText('Import dataset')
+                button.setEnabled(False)
         self.filePathButton.clicked.connect(self.getFilePath)
+        self.datasetLabel.setVisible(False)
+        self.datasetListComboBox.setVisible(False)
         self.metadataWidget.setVisible(False)
         self.filterGroupBox.setVisible(False)
         self.saveWidget.setVisible(False)
@@ -38,10 +43,13 @@ class InputDialog(QtWidgets.QDialog):
             dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
                 remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
             self.datasetListComboBox.addItems(dataset_id_list)
+            self.datasetLabel.setVisible(True)
+            self.datasetListComboBox.setVisible(True)
         except helper_functions.DomainError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
         except helper_functions.AccessError:
-            QtWidgets.QMessageBox.information(None, "ERROR:", "This apikey to search for datasets is wrong.")
+            QtWidgets.QMessageBox.information(None, "ERROR:", "You need an API key to access this domain or "
+                                                              "the apikey to search for datasets is wrong.")
 
     def updateSchemaTable(self):
         if self.datasetListComboBox.currentText():
@@ -62,15 +70,23 @@ class InputDialog(QtWidgets.QDialog):
                     self.schemaTableWidget.setItem(0, column_position, QtWidgets.QTableWidgetItem(field['label']))
                     self.schemaTableWidget.setItem(1, column_position, QtWidgets.QTableWidgetItem(field['name']))
                     self.schemaTableWidget.setItem(2, column_position, QtWidgets.QTableWidgetItem(field['type']))
+                for button in self.dialogButtonBox.buttons():
+                    if button.text() == 'Import dataset':
+                        button.setEnabled(True)
             except helper_functions.DatasetError:
                 QtWidgets.QMessageBox.information(None, "ERROR:", "This dataset is private. "
                                                                   "You need an API key to access it.")
             self.metadataWidget.setVisible(True)
             self.saveWidget.setVisible(True)
         else:
+            self.datasetLabel.setVisible(False)
+            self.datasetListComboBox.setVisible(False)
             self.metadataWidget.setVisible(False)
             self.showFilterCheckBox.setChecked(False)
             self.saveWidget.setVisible(False)
+            for button in self.dialogButtonBox.buttons():
+                if button.text() == 'Import dataset':
+                    button.setEnabled(False)
             QCoreApplication.processEvents()
             self.resize(self.width(), 0)
 
@@ -159,15 +175,21 @@ class InputDialog(QtWidgets.QDialog):
         self.nonGeoCheckBox.setChecked(ods_cache['include_non_geo_dataset'])
         self.showFilterCheckBox.setChecked(ods_cache['are_filters_shown'])
         self.defaultGeomCheckBox.setChecked(ods_cache['default_geom_column'])
-        if apikey:
-            if ods_cache['store_apikey_in_cache']:
-                self.apikeyCacheCheckBox.setChecked(True)
-                self.apikeyInput.setText(apikey)
-                self.updateListButtonPressed()
-                self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
-        else:
-            self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
+
+        if apikey and ods_cache['store_apikey_in_cache']:
+            self.apikeyCacheCheckBox.setChecked(True)
+            self.apikeyInput.setText(apikey)
+            self.updateListButtonPressed()
             self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
+        else:
+            if 'items' in ods_cache['dataset_id']:
+                self.datasetLabel.setVisible(True)
+                self.datasetListComboBox.setVisible(True)
+                self.datasetListComboBox.addItems(ods_cache['dataset_id']['items'])
+                self.datasetListComboBox.setCurrentIndex(ods_cache['dataset_id']['index'])
+            else:
+                self.datasetLabel.setVisible(False)
+                self.datasetListComboBox.setVisible(False)
         if 'select' in ods_cache['params']:
             self.selectInput.setText(ods_cache['params']['select'])
         if 'where' in ods_cache['params']:
