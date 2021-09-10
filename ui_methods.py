@@ -39,6 +39,7 @@ class InputDialog(QtWidgets.QDialog):
 
     def updateListButtonPressed(self):
         self.datasetListComboBox.clear()
+        self.datasetListComboBox.addItems(["--Choose a dataset identifier--"])
         try:
             dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
                 remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
@@ -52,7 +53,7 @@ class InputDialog(QtWidgets.QDialog):
                                                               "the apikey to search for datasets is wrong.")
 
     def updateSchemaTable(self):
-        if self.datasetListComboBox.currentText():
+        if self.datasetListComboBox.currentText() and self.datasetListComboBox.currentText() != "--Choose a dataset identifier--":
             self.schemaTableWidget.setColumnCount(0)
             try:
                 if self.apikey():
@@ -86,6 +87,15 @@ class InputDialog(QtWidgets.QDialog):
             self.metadataWidget.setVisible(True)
             self.saveWidget.setVisible(True)
             self.clearFilters()
+        elif self.datasetListComboBox.currentText() == "--Choose a dataset identifier--":
+            self.metadataWidget.setVisible(False)
+            self.showFilterCheckBox.setChecked(False)
+            self.saveWidget.setVisible(False)
+            for button in self.dialogButtonBox.buttons():
+                if button.text() == 'Import dataset':
+                    button.setEnabled(False)
+            QCoreApplication.processEvents()
+            self.resize(self.width(), 0)
         else:
             self.datasetLabel.setVisible(False)
             self.datasetListComboBox.setVisible(False)
