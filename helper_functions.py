@@ -60,6 +60,19 @@ def import_dataset_metadata(domain_url, dataset_id, apikey):
     return query.json()
 
 
+def import_first_record(domain_url, dataset_id, apikey):
+    params = {'limit': 1}
+    if apikey:
+        params['apikey'] = apikey
+    try:
+        query = requests.get("https://{}/api/v2/catalog/datasets/{}/query".format(domain_url, dataset_id), params)
+    except requests.exceptions.ConnectionError:
+        raise DomainError
+    if query.status_code == 404 or query.json()['total_count'] == 0:
+        raise DatasetError
+    return query.json()
+
+
 def get_geom_column(metadata):
     for field in metadata['results'][0]['fields']:
         if field['type'] == 'geo_shape':

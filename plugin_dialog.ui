@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>809</width>
-    <height>693</height>
+    <height>729</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -133,14 +133,20 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>100</height>
+          <height>136</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>100</height>
+          <height>200</height>
          </size>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="rowCount">
+         <number>4</number>
         </property>
         <attribute name="horizontalHeaderVisible">
          <bool>false</bool>
@@ -158,6 +164,11 @@
         <row>
          <property name="text">
           <string>Field type</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>First record</string>
          </property>
         </row>
        </widget>

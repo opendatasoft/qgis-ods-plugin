@@ -58,8 +58,12 @@ class InputDialog(QtWidgets.QDialog):
                 if self.apikey():
                     metadata = helper_functions.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
                                                                         self.apikey())
+                    first_record = helper_functions.import_first_record(remove_http(self.domain()), self.dataset_id(),
+                                                                        self.apikey())
                 else:
                     metadata = helper_functions.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
+                                                                        None)
+                    first_record = helper_functions.import_first_record(remove_http(self.domain()), self.dataset_id(),
                                                                         None)
                 self.datasetNameLabel.setText("Dataset name: {}".format(metadata['results'][0]['default']['title']))
                 self.publisherLabel.setText("Publisher: {}".format(metadata['results'][0]['default']['publisher']))
@@ -70,6 +74,9 @@ class InputDialog(QtWidgets.QDialog):
                     self.schemaTableWidget.setItem(0, column_position, QtWidgets.QTableWidgetItem(field['label']))
                     self.schemaTableWidget.setItem(1, column_position, QtWidgets.QTableWidgetItem(field['name']))
                     self.schemaTableWidget.setItem(2, column_position, QtWidgets.QTableWidgetItem(field['type']))
+                    first_record_value = first_record['results'][0][field['name']]
+                    self.schemaTableWidget.setItem(3, column_position, QtWidgets.QTableWidgetItem(str(first_record_value)))
+                    self.schemaTableWidget.resizeColumnsToContents()
                 for button in self.dialogButtonBox.buttons():
                     if button.text() == 'Import dataset':
                         button.setEnabled(True)
