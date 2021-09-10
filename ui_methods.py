@@ -78,6 +78,7 @@ class InputDialog(QtWidgets.QDialog):
                                                                   "You need an API key to access it.")
             self.metadataWidget.setVisible(True)
             self.saveWidget.setVisible(True)
+            self.clearFilters()
         else:
             self.datasetLabel.setVisible(False)
             self.datasetListComboBox.setVisible(False)
