@@ -202,7 +202,7 @@
     <widget class="QLabel" name="textSearchLabel">
      <property name="text">
       <string>(Optional) Text search 
-in the catalog of the domain:</string>
+in the domain's catalog:</string>
      </property>
     </widget>
    </item>
