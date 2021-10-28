@@ -1,9 +1,9 @@
 [general]
-name=ODS
-description=ODS plugin
-about=This plugin links ODS to QGIS.
+name=Opendatasoft
+description=This plugin allows to directly fetch datasets from Opendatasoft's dataset catalogs.
+about=This plugin allows one to directly import, in the GeoJSON format, any dataset from a private or public Opendatasoft datasets catalog. It uses the Explore API v2 of Opendatasoft to fetch the dataset, allowing the use of Opendatasoft's query language filters (based on SQL).
 version=1.0
 qgisMinimumVersion=3.0
 author=Venceslas Roullier
-email=venceslas.roullier@opendatasoft.com
-repository=URL to the code repository
+email=support@opendatasoft.com
+repository=https://github.com/opendatasoft/qgis-ods-plugin

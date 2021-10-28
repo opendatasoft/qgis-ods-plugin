@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import *
 
-from . import ui_methods, helper_functions
+from . import ui_methods, utils
 
 
 class QgisOdsPlugin:
@@ -26,7 +26,7 @@ class QgisOdsPlugin:
         settings = QSettings()
         if 'ods_cache' in settings.allKeys():
             try:
-                apikey = helper_functions.get_apikey_from_cache()
+                apikey = utils.get_apikey_from_cache()
                 dialog.push_ods_cache(settings.value('ods_cache'), apikey)
             except KeyError:
                 pass

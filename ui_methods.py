@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QSettings
 from PyQt5.QtCore import QCoreApplication
 
-from . import helper_functions
+from . import utils
 
 
 class InputDialog(QtWidgets.QDialog):
@@ -41,14 +41,14 @@ class InputDialog(QtWidgets.QDialog):
         self.datasetListComboBox.clear()
         self.datasetListComboBox.addItems(["--Choose a dataset identifier--"])
         try:
-            dataset_id_list = helper_functions.datasets_to_dataset_id_list(helper_functions.import_dataset_list(
+            dataset_id_list = utils.datasets_to_dataset_id_list(utils.import_dataset_list(
                 remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
             self.datasetListComboBox.addItems(dataset_id_list)
             self.datasetLabel.setVisible(True)
             self.datasetListComboBox.setVisible(True)
-        except helper_functions.DomainError:
+        except utils.DomainError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
-        except helper_functions.AccessError:
+        except utils.AccessError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "You need an API key to access this domain or "
                                                               "the apikey to search for datasets is wrong.")
 
@@ -57,15 +57,15 @@ class InputDialog(QtWidgets.QDialog):
             self.schemaTableWidget.setColumnCount(0)
             try:
                 if self.apikey():
-                    metadata = helper_functions.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
-                                                                        self.apikey())
-                    first_record = helper_functions.import_first_record(remove_http(self.domain()), self.dataset_id(),
-                                                                        self.apikey())
+                    metadata = utils.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
+                                                             self.apikey())
+                    first_record = utils.import_first_record(remove_http(self.domain()), self.dataset_id(),
+                                                             self.apikey())
                 else:
-                    metadata = helper_functions.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
-                                                                        None)
-                    first_record = helper_functions.import_first_record(remove_http(self.domain()), self.dataset_id(),
-                                                                        None)
+                    metadata = utils.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
+                                                             None)
+                    first_record = utils.import_first_record(remove_http(self.domain()), self.dataset_id(),
+                                                             None)
                 self.datasetNameLabel.setText("Dataset name: {}".format(metadata['results'][0]['default']['title']))
                 self.publisherLabel.setText("Publisher: {}".format(metadata['results'][0]['default']['publisher']))
                 self.recordsNumberLabel.setText("Number of records: {}".format(metadata['results'][0]['default']['records_count']))
@@ -81,7 +81,7 @@ class InputDialog(QtWidgets.QDialog):
                 for button in self.dialogButtonBox.buttons():
                     if button.text() == 'Import dataset':
                         button.setEnabled(True)
-            except helper_functions.DatasetError:
+            except utils.DatasetError:
                 QtWidgets.QMessageBox.information(None, "ERROR:", "This dataset is private. "
                                                                   "You need an API key to access it.")
             self.metadataWidget.setVisible(True)
@@ -156,8 +156,8 @@ class InputDialog(QtWidgets.QDialog):
             else:
                 params['select'] = select_input
             if self.defaultGeomCheckBox.isChecked():
-                geom_column_name = helper_functions.get_geom_column(
-                    helper_functions.import_dataset_metadata(self.domain(), self.dataset_id(), self.apikey()))
+                geom_column_name = utils.get_geom_column(
+                    utils.import_dataset_metadata(self.domain(), self.dataset_id(), self.apikey()))
                 if geom_column_name:
                     if geom_column_name not in params['select']:
                         params['select'] += ',' + geom_column_name
@@ -233,18 +233,18 @@ class InputDialog(QtWidgets.QDialog):
         if self.apikey():
             params['apikey'] = self.apikey()
         try:
-            imported_dataset = helper_functions.import_dataset_to_qgis(self.domain(), self.dataset_id(), params)
+            imported_dataset = utils.import_dataset_to_qgis(self.domain(), self.dataset_id(), params)
             self.setVisible(False)
-            helper_functions.load_dataset_to_qgis(path, self.dataset_id(), imported_dataset)
+            utils.load_dataset_to_qgis(path, self.dataset_id(), imported_dataset)
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
             dataset_index = self.datasetListComboBox.currentIndex()
 
             if self.apikey():
                 params.pop('apikey')
-                if self.apikey() != helper_functions.get_apikey_from_cache() and self.apikeyCacheCheckBox.isChecked():
-                    helper_functions.create_new_ods_auth_config(self.apikey())
+                if self.apikey() != utils.get_apikey_from_cache() and self.apikeyCacheCheckBox.isChecked():
+                    utils.create_new_ods_auth_config(self.apikey())
             else:
-                helper_functions.remove_ods_auth_config()
+                utils.remove_ods_auth_config()
 
             ods_cache = {'domain': self.domain(), 'include_non_geo_dataset': self.nonGeoCheckBox.isChecked(),
                          'text_search': self.text_search(),
@@ -259,19 +259,19 @@ class InputDialog(QtWidgets.QDialog):
             settings.setValue('ods_cache', ods_cache)
 
             self.close()
-        except helper_functions.OdsqlError:
+        except utils.OdsqlError:
             pass
-        except helper_functions.DomainError:
+        except utils.DomainError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "This domain does not exist.")
-        except helper_functions.DatasetError:
+        except utils.DatasetError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "The dataset you want does not exist on this domain.")
-        except helper_functions.NumberOfLinesError:
+        except utils.NumberOfLinesError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "Limit has to be a strictly positive int.")
         except FileNotFoundError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "Specified folder path doesn't exist.")
         except PermissionError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "Permission required to write on this file.")
-        except helper_functions.AccessError:
+        except utils.AccessError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "The apikey to access this dataset is wrong.")
 
 
