@@ -201,7 +201,8 @@
    <item row="2" column="0">
     <widget class="QLabel" name="textSearchLabel">
      <property name="text">
-      <string>(Optional) Text search:</string>
+      <string>(Optional) Text search 
+in the catalog of the domain:</string>
      </property>
     </widget>
    </item>
