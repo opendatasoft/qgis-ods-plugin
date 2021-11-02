@@ -1,6 +1,6 @@
 [general]
 name=Opendatasoft
-description=This plugin allows to directly fetch datasets from Opendatasoft's dataset catalogs.
+description=This plugin allows to directly fetch datasets from Opendatasoft's dataset catalogs. Developed by Venceslas Roullier from Opendatasoft.
 about=This plugin allows one to directly import, in the GeoJSON format, any dataset from a private or public Opendatasoft datasets catalog. It uses the Explore API v2 of Opendatasoft to fetch the dataset, allowing the use of Opendatasoft's query language filters (based on SQL).
 version=1.0
 qgisMinimumVersion=3.0
