@@ -1,4 +1,5 @@
 import os
+from urllib.parse import urlparse
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QCoreApplication
@@ -39,11 +40,14 @@ class InputDialog(QtWidgets.QDialog):
         self.show()
 
     def updateListButtonPressed(self):
+        """
+        Fetch datasets list from the remote catalog server.
+        """
         self.datasetListComboBox.clear()
         self.datasetListComboBox.addItems(["--Choose a dataset identifier--"])
         try:
             dataset_id_list = utils.datasets_to_dataset_id_list(utils.import_dataset_list(
-                remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
+                self.domain(), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
             self.datasetListComboBox.addItems(dataset_id_list)
             self.datasetLabel.setVisible(True)
             self.datasetListComboBox.setVisible(True)
@@ -54,22 +58,23 @@ class InputDialog(QtWidgets.QDialog):
                                                               "the apikey to search for datasets is wrong.")
 
     def updateSchemaTable(self):
-        if self.datasetListComboBox.currentText() and self.datasetListComboBox.currentText() != "--Choose a dataset identifier--":
+        """
+        Fetch selected dataset metadata and first records in order to fill the schema.
+        """
+        if self.datasetListComboBox.currentText() and \
+                self.datasetListComboBox.currentText() != "--Choose a dataset identifier--":
             self.schemaTableWidget.setColumnCount(0)
             try:
                 if self.apikey():
-                    metadata = utils.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
-                                                             self.apikey())
-                    first_record = utils.import_first_record(remove_http(self.domain()), self.dataset_id(),
-                                                             self.apikey())
+                    metadata = utils.import_dataset_metadata(self.domain(), self.dataset_id(), self.apikey())
+                    first_record = utils.import_first_record(self.domain(), self.dataset_id(), self.apikey())
                 else:
-                    metadata = utils.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
-                                                             None)
-                    first_record = utils.import_first_record(remove_http(self.domain()), self.dataset_id(),
-                                                             None)
+                    metadata = utils.import_dataset_metadata(self.domain(), self.dataset_id(), None)
+                    first_record = utils.import_first_record(self.domain(), self.dataset_id(), None)
                 self.datasetNameLabel.setText("Dataset name: {}".format(metadata['results'][0]['default']['title']))
                 self.publisherLabel.setText("Publisher: {}".format(metadata['results'][0]['default']['publisher']))
-                self.recordsNumberLabel.setText("Number of records: {}".format(metadata['results'][0]['default']['records_count']))
+                self.recordsNumberLabel.setText("Number of records: {}".format(
+                    metadata['results'][0]['default']['records_count']))
                 for field in metadata['results'][0]['fields']:
                     column_position = self.schemaTableWidget.columnCount()
                     self.schemaTableWidget.insertColumn(column_position)
@@ -133,7 +138,13 @@ class InputDialog(QtWidgets.QDialog):
 
     def domain(self):
         url = self.domainInput.text()
-        return remove_http(url)
+        if urlparse(url).scheme:
+            # https://data.opendatasoft.com format
+            ods_domain_url = urlparse(url).netloc
+        else:
+            # no scheme, urlparse cannot parse: let's do best effort
+            ods_domain_url = url.split('/')[0]
+        return ods_domain_url
 
     def apikey(self):
         if self.apikeyInput.text():
@@ -284,17 +295,9 @@ class CancelImportDialog(QtWidgets.QDialog):
         uic.loadUi(ui_path, self)
 
         self.isCanceled = False
-        self.cancelButton.clicked.connect(self.cancel_import)
+        self.cancelButton.clicked.connect(self.cancelImport)
 
         self.show()
 
-    def cancel_import(self):
+    def cancelImport(self):
         self.isCanceled = True
-
-
-def remove_http(url):
-    if url.startswith("https://"):
-        return url[len("https://"):]
-    elif url.startswith("http://"):
-        return url[len("http://"):]
-    return url
