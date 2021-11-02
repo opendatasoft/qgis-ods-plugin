@@ -13,7 +13,10 @@ V2_API_CHUNK_SIZE = 100
 
 def import_dataset_list(domain_url, apikey, include_non_geo_dataset, text_search_param):
     """HTTP call to Opendatasoft Explore API to get the dataset list of the input domain."""
-    params = {'limit': V2_API_CHUNK_SIZE, 'order_by': 'dataset_id'}
+    params = {
+        'select': 'dataset_id',
+        'limit': V2_API_CHUNK_SIZE,
+        'order_by': 'dataset_id'}
     if apikey:
         params['apikey'] = apikey
     if text_search_param:
