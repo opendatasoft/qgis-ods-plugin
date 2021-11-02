@@ -30,7 +30,7 @@
    <item alignment="Qt::AlignHCenter">
     <widget class="QLabel" name="chunkLabel">
      <property name="text">
-      <string>Loading chunck n°0</string>
+      <string>Loading chunk n°0</string>
      </property>
     </widget>
    </item>

@@ -1,8 +1,10 @@
 import tempfile
+from typing import List
 
 import requests
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QCoreApplication, QElapsedTimer
+from qgis.core import QgsApplication, QgsAuthMethodConfig, QgsProject, QgsVectorLayer
 
 from . import ui_methods
 
@@ -21,7 +23,7 @@ def import_dataset_list(domain_url, apikey, include_non_geo_dataset, text_search
         if 'where' in params:
             params['where'].append("features='geo'")
         else:
-            params['where'] = "features='geo'"
+            params['where'] = ["features='geo'"]
 
     try:
         first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
@@ -84,7 +86,6 @@ def get_geom_column(metadata):
 
 
 def create_new_ods_auth_config(apikey):
-    from qgis.core import QgsApplication, QgsAuthMethodConfig
 
     auth_manager = QgsApplication.authManager()
     config = QgsAuthMethodConfig()
@@ -95,8 +96,6 @@ def create_new_ods_auth_config(apikey):
 
 
 def remove_ods_auth_config():
-    from qgis.core import QgsApplication, QgsAuthMethodConfig
-
     auth_manager = QgsApplication.authManager()
     config_dict = auth_manager.availableAuthMethodConfigs()
     for authConfig in config_dict.keys():
@@ -106,8 +105,6 @@ def remove_ods_auth_config():
 
 
 def get_apikey_from_cache():
-    from qgis.core import QgsApplication, QgsAuthMethodConfig
-
     auth_manager = QgsApplication.authManager()
     config_dict = auth_manager.availableAuthMethodConfigs()
     apikey = None
@@ -151,9 +148,7 @@ def import_dataset_to_qgis(domain, dataset_id, params):
 
 
 def load_dataset_to_qgis(path, dataset_id, imported_dataset):
-    from qgis.core import QgsProject, QgsVectorLayer
-
-    cancelImportDialog = ui_methods.CancelImportDialog()
+    cancel_import_dialog = ui_methods.CancelImportDialog()
     try:
         file_path = path
         if file_path == "":
@@ -168,11 +163,11 @@ def load_dataset_to_qgis(path, dataset_id, imported_dataset):
                 f.write(chunk)
                 downloaded += len(chunk)
                 QCoreApplication.processEvents()
-                cancelImportDialog.chunkLabel.setText(
+                cancel_import_dialog.chunkLabel.setText(
                     'Downloaded: {}MB\nSpeed: {:.2f}kB/s'.format(
                         downloaded // 1024 // 1024,
                         (downloaded / 1024) / (timer.elapsed() / 1000)))
-                if cancelImportDialog.isCanceled:
+                if cancel_import_dialog.isCanceled:
                     return
 
     except FileNotFoundError:

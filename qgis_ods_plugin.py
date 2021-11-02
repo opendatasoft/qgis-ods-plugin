@@ -11,6 +11,7 @@ class QgisOdsPlugin:
     def __init__(self, iface):
         self.iface = iface
 
+    # noinspection PyPep8Naming
     def initGui(self):
         self.action = QtWidgets.QAction(QIcon(os.path.join(os.path.dirname(__file__), "icon.png")), "ODS plugin",
                                         self.iface.mainWindow())

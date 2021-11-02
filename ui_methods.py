@@ -1,12 +1,13 @@
 import os
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QSettings
 from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import QSettings
 
 from . import utils
 
 
+# noinspection PyPep8Naming
 class InputDialog(QtWidgets.QDialog):
     def __init__(self, iface):
         super(InputDialog, self).__init__()
@@ -283,11 +284,11 @@ class CancelImportDialog(QtWidgets.QDialog):
         uic.loadUi(ui_path, self)
 
         self.isCanceled = False
-        self.cancelButton.clicked.connect(self.cancelImport)
+        self.cancelButton.clicked.connect(self.cancel_import)
 
         self.show()
 
-    def cancelImport(self):
+    def cancel_import(self):
         self.isCanceled = True
 
 

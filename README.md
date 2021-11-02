@@ -27,11 +27,11 @@ I choose to look up a dataset from documentation-resources.opendatasoft.com, whe
 
 Since there are a lot of datasets, I want to refine the list by searching for dataset that concerns one subject I like a lot : trees ! So I search for trees (arbres, in French) before updating my list.
 I finally choose to load the dataset id list.
-I must then select a dataset : it's the dataset I'm going to donwload as a layer on QGIS.
+I must then select a dataset : it's the dataset I'm going to download as a layer on QGIS.
 
 ![Trees in Paris you say ? It's possible, I swear !](/documentation/Photo3.png "Trees in Paris you say ? It's possible, I swear !")
 
-Since I like old trees, I chose a dataset about noticable trees in Paris.
+Since I like old trees, I chose a dataset about noticeable trees in Paris.
 As I choose this dataset, a lot of information appears about it, noticeably its fields.
 
 ![Nice table](/documentation/Photo4.png "Nice table")
@@ -55,6 +55,6 @@ No filters this time, I want Paris as a whole.
 
 ![Told you there are some interesting trees in Paris !](/documentation/Photo2.png "Told you there are some interesting trees in Paris !")
 
-The other dataset is imported, another layer is created. And after ordering my layers a bit, you can clearly see where the noticable plane trees of Paris are. Well done !
+The other dataset is imported, another layer is created. And after ordering my layers a bit, you can clearly see where the noticeable plane trees of Paris are. Well done !
 
 ![Now it's your turn to have fun !](/documentation/Photo2.png "Now it's your turn to have fun !")

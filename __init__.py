@@ -10,5 +10,7 @@
 
 from . import qgis_ods_plugin
 
+
+# noinspection PyPep8Naming
 def classFactory(iface):
     return qgis_ods_plugin.QgisOdsPlugin(iface)
