@@ -1,5 +1,4 @@
 import tempfile
-from typing import List
 
 import requests
 from PyQt5 import QtWidgets
