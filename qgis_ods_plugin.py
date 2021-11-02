@@ -13,10 +13,13 @@ class QgisOdsPlugin:
 
     # noinspection PyPep8Naming
     def initGui(self):
-        self.action = QtWidgets.QAction(QIcon(os.path.join(os.path.dirname(__file__), "icon.png")), "ODS plugin",
-                                        self.iface.mainWindow())
+        self.action = QtWidgets.QAction(
+            QIcon(os.path.join(os.path.dirname(__file__), "icon.png")),
+            "ODS plugin",
+            self.iface.mainWindow())
         self.action.triggered.connect(self.run)
         self.iface.addToolBarIcon(self.action)
+        self.iface.addPluginToWebMenu('Opendatasoft', self.action)
 
     def unload(self):
         self.iface.removeToolBarIcon(self.action)
