@@ -9,9 +9,16 @@ from . import utils
 
 
 # noinspection PyPep8Naming
-class InputDialog(QtWidgets.QDialog):
+class ODSDialog(QtWidgets.QDialog):
+    """
+    Main dialog window. Allows the user to:
+    - fetch the catalog of datasets for a given Opendatasoft domain
+    - select a specific dataset from the catalog
+    - add optional SQL-like filters
+    - download the dataset locally
+    """
     def __init__(self, iface):
-        super(InputDialog, self).__init__()
+        super(ODSDialog, self).__init__()
         ui_dir = os.path.dirname(os.path.abspath(__file__))
         ui_path = os.path.join(ui_dir, 'plugin_dialog.ui')
         uic.loadUi(ui_path, self)
@@ -93,18 +100,11 @@ class InputDialog(QtWidgets.QDialog):
             self.metadataWidget.setVisible(True)
             self.saveWidget.setVisible(True)
             self.clearFilters()
-        elif self.datasetListComboBox.currentText() == "--Choose a dataset identifier--":
-            self.metadataWidget.setVisible(False)
-            self.showFilterCheckBox.setChecked(False)
-            self.saveWidget.setVisible(False)
-            for button in self.dialogButtonBox.buttons():
-                if button.text() == 'Import dataset':
-                    button.setEnabled(False)
-            QCoreApplication.processEvents()
-            self.resize(self.width(), 0)
         else:
-            self.datasetLabel.setVisible(False)
-            self.datasetListComboBox.setVisible(False)
+            if self.datasetListComboBox.currentText() != "--Choose a dataset identifier--":
+                self.datasetLabel.setVisible(False)
+                self.datasetListComboBox.setVisible(False)
+
             self.metadataWidget.setVisible(False)
             self.showFilterCheckBox.setChecked(False)
             self.saveWidget.setVisible(False)
@@ -232,6 +232,10 @@ class InputDialog(QtWidgets.QDialog):
             self.pathInput.setText(ods_cache['path'])
 
     def importDataset(self):
+        """
+        Fetch the selected dataset from remote Opendatasoft catalog
+        and add it to the current project as a vector layer.
+        """
         settings = QSettings()
         if self.domain() == "" or self.dataset_id() == "":
             QtWidgets.QMessageBox.information(None, "ERROR:", "Domain and dataset fields must be filled to import a "
@@ -245,9 +249,9 @@ class InputDialog(QtWidgets.QDialog):
         if self.apikey():
             params['apikey'] = self.apikey()
         try:
-            imported_dataset = utils.import_dataset_to_qgis(self.domain(), self.dataset_id(), params)
+            fetched_dataset = utils.import_dataset_to_qgis(self.domain(), self.dataset_id(), params)
             self.setVisible(False)
-            utils.load_dataset_to_qgis(path, self.dataset_id(), imported_dataset)
+            utils.load_dataset_to_qgis(path, self.dataset_id(), fetched_dataset)
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
             dataset_index = self.datasetListComboBox.currentIndex()
 
@@ -287,6 +291,7 @@ class InputDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.information(None, "ERROR:", "The apikey to access this dataset is wrong.")
 
 
+# noinspection PyPep8Naming
 class CancelImportDialog(QtWidgets.QDialog):
     def __init__(self):
         super(CancelImportDialog, self).__init__()

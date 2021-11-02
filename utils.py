@@ -12,6 +12,7 @@ V2_API_CHUNK_SIZE = 100
 
 
 def import_dataset_list(domain_url, apikey, include_non_geo_dataset, text_search_param):
+    """HTTP call to Opendatasoft Explore API to get the dataset list of the input domain."""
     params = {'limit': V2_API_CHUNK_SIZE, 'order_by': 'dataset_id'}
     if apikey:
         params['apikey'] = apikey
@@ -49,6 +50,7 @@ def datasets_to_dataset_id_list(json_dataset):
 
 
 def import_dataset_metadata(domain_url, dataset_id, apikey):
+    """HTTP call to Opendatasoft Explore API to fetch the metadata of a given dataset."""
     params = {'where': 'datasetid:"{}"'.format(dataset_id)}
     if apikey:
         params['apikey'] = apikey
@@ -62,6 +64,7 @@ def import_dataset_metadata(domain_url, dataset_id, apikey):
 
 
 def import_first_record(domain_url, dataset_id, apikey):
+    """HTTP call to Opendatasoft Explore API to fetch the first record of a given dataset."""
     params = {'limit': 1}
     if apikey:
         params['apikey'] = apikey

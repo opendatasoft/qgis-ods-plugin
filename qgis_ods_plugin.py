@@ -26,7 +26,10 @@ class QgisOdsPlugin:
         del self.action
 
     def run(self):
-        dialog = ui_methods.InputDialog(self.iface)
+        """
+        Init the main dialog window and init the ods_cache, used for storing credentials.
+        """
+        dialog = ui_methods.ODSDialog(self.iface)
         settings = QSettings()
         if 'ods_cache' in settings.allKeys():
             try:
