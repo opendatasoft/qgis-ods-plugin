@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ODS</class>
+ <widget class="QDialog" name="ODS">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>809</width>
+    <height>740</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Import an ODS dataset</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="29" column="0" rowspan="2" colspan="3">
+    <widget class="QGroupBox" name="filterGroupBox">
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="defaultGeomCheckBox">
+        <property name="text">
+         <string>Always add geometry column if not selected</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="clearFiltersButton">
+        <property name="text">
+         <string>Clear filters</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="selectLabel">
+        <property name="text">
+         <string>Select:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="2">
+       <widget class="QLineEdit" name="selectInput">
+        <property name="placeholderText">
+         <string>columnA,columnB</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="whereLabel">
+        <property name="text">
+         <string>Where:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QLineEdit" name="whereInput">
+        <property name="placeholderText">
+         <string>columnA:valueA</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="orderByLabel">
+        <property name="text">
+         <string>Order_by:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="2">
+       <widget class="QLineEdit" name="orderByInput">
+        <property name="placeholderText">
+         <string>columnA</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1" colspan="2">
+       <widget class="QLineEdit" name="limitInput"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="limitLabel">
+        <property name="mouseTracking">
+         <bool>false</bool>
+        </property>
+        <property name="lineWidth">
+         <number>1</number>
+        </property>
+        <property name="text">
+         <string>Limit:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="DocLink">
+        <property name="text">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-(ODSQL)&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5858e7;&quot;&gt;Link to online documentation&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="openExternalLinks">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="16" column="0" colspan="3">
+    <widget class="QWidget" name="metadataWidget" native="true">
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="0" column="0">
+       <widget class="QLabel" name="datasetNameLabel">
+        <property name="text">
+         <string>Dataset name: </string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="showFilterCheckBox">
+        <property name="text">
+         <string>Add filters to your query</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="recordsNumberLabel">
+        <property name="text">
+         <string>Number of records:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QTableWidget" name="schemaTableWidget">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>136</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>200</height>
+         </size>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="rowCount">
+         <number>4</number>
+        </property>
+        <attribute name="horizontalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <row>
+         <property name="text">
+          <string>Label</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>Field name</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>Field type</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>First record</string>
+         </property>
+        </row>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="publisherLabel">
+        <property name="text">
+         <string>Publisher: </string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QCheckBox" name="apikeyCacheCheckBox">
+     <property name="text">
+      <string>Store apikey in secure cache
+(you need a QGIS master password)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="datasetLabel">
+     <property name="text">
+      <string>Dataset identifier:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="textSearchLabel">
+     <property name="text">
+      <string>(Optional) Text search 
+in the domain's catalog:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="apikeyLabel">
+     <property name="text">
+      <string>(Optional) API key:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="31" column="0" colspan="3">
+    <widget class="QWidget" name="saveWidget" native="true">
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0">
+       <widget class="QLabel" name="pathLabel">
+        <property name="text">
+         <string>(Optional) Full path to save dataset:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="pathInput">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="placeholderText">
+         <string>My/Favorite/dataset.geojson</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="filePathButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Browse</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="domainLabel">
+     <property name="text">
+      <string>Domain address:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="apikeyInput"/>
+   </item>
+   <item row="4" column="1" colspan="2">
+    <widget class="QComboBox" name="datasetListComboBox"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="textSearchInput"/>
+   </item>
+   <item row="0" column="2">
+    <widget class="QCheckBox" name="nonGeoCheckBox">
+     <property name="text">
+      <string>Include non-geo datasets</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="domainInput">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>domain.opendatasoft.com</string>
+     </property>
+    </widget>
+   </item>
+   <item row="33" column="1" colspan="2">
+    <widget class="QDialogButtonBox" name="dialogButtonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QPushButton" name="updateListButton">
+     <property name="text">
+      <string>Update dataset list</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Search result is sorted by relevance,
+alphabetically otherwise</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>dialogButtonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>ODS</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
