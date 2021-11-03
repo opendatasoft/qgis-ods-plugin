@@ -53,7 +53,7 @@ class InputDialog(QtWidgets.QDialog):
                                                               "the apikey to search for datasets is wrong.")
         except utils.InternalError:
             QtWidgets.QMessageBox.information(None, "ERROR:", "InternalError from Opendatasoft while updating dataset list: "
-                                                              "contact Opendatasoft support for more information.")
+                                                              "contact support@opendatasoft for more information.")
 
     def updateSchemaTable(self):
         if self.datasetListComboBox.currentText() and self.datasetListComboBox.currentText() != "--Choose a dataset identifier--":
