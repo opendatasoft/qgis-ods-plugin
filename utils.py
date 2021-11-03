@@ -30,6 +30,8 @@ def import_dataset_list(domain_url, apikey, include_non_geo_dataset, text_search
 
     try:
         first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
+        if first_query.status_code == 500:
+            raise InternalError
         if first_query.status_code == 404:
             raise DomainError
         if first_query.status_code == 401:
@@ -42,6 +44,8 @@ def import_dataset_list(domain_url, apikey, include_non_geo_dataset, text_search
     query_size_limit = 30000 if domain_url == 'data.opendatasoft.com' else V2_QUERY_SIZE_LIMIT - V2_API_CHUNK_SIZE
     while params['offset'] <= total_count and params['offset'] < query_size_limit:
         query = requests.get("https://{}/api/v2/catalog/query".format(domain_url), params)
+        if query.status_code == 500:
+            raise InternalError
         json_dataset['results'] += query.json()['results']
         params['offset'] += V2_API_CHUNK_SIZE
     return json_dataset
@@ -201,4 +205,8 @@ class DatasetError(Exception):
 
 
 class AccessError(Exception):
+    pass
+
+
+class InternalError(Exception):
     pass
