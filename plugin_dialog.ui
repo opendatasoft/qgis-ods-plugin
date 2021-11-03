@@ -26,13 +26,6 @@
       <bool>true</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="3" column="0">
-       <widget class="QLabel" name="orderByLabel">
-        <property name="text">
-         <string>Order_by:</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QCheckBox" name="defaultGeomCheckBox">
         <property name="text">
@@ -42,6 +35,58 @@
          <bool>true</bool>
         </property>
        </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="clearFiltersButton">
+        <property name="text">
+         <string>Clear filters</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="selectLabel">
+        <property name="text">
+         <string>Select:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" colspan="2">
+       <widget class="QLineEdit" name="selectInput">
+        <property name="placeholderText">
+         <string>columnA,columnB</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="whereLabel">
+        <property name="text">
+         <string>Where:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2">
+       <widget class="QLineEdit" name="whereInput">
+        <property name="placeholderText">
+         <string>columnA:valueA</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="orderByLabel">
+        <property name="text">
+         <string>Order_by:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="2">
+       <widget class="QLineEdit" name="orderByInput">
+        <property name="placeholderText">
+         <string>columnA</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1" colspan="2">
+       <widget class="QLineEdit" name="limitInput"/>
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="limitLabel">
@@ -56,48 +101,13 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="selectLabel">
+      <item row="5" column="0">
+       <widget class="QLabel" name="DocLink">
         <property name="text">
-         <string>Select:</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://help.opendatasoft.com/apis/ods-explore-v2/#section/Opendatasoft-Query-Language-(ODSQL)&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#5858e7;&quot;&gt;Link to online documentation&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="whereLabel">
-        <property name="text">
-         <string>Where:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1" colspan="2">
-       <widget class="QLineEdit" name="orderByInput">
-        <property name="placeholderText">
-         <string>columnA</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1" colspan="2">
-       <widget class="QLineEdit" name="limitInput"/>
-      </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="QLineEdit" name="selectInput">
-        <property name="placeholderText">
-         <string>columnA,columnB</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1" colspan="2">
-       <widget class="QLineEdit" name="whereInput">
-        <property name="placeholderText">
-         <string>columnA:valueA</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QPushButton" name="clearFiltersButton">
-        <property name="text">
-         <string>Clear filters</string>
+        <property name="openExternalLinks">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

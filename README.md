@@ -96,3 +96,10 @@ Each time an import is made, its informations will be stored in a cache, itself 
 
 ## License
 qgis-ods-plugin is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; version 3 of the License.
+
+
+## Changelog
+### 1.0.0
+*Th, 4 Nov 2021*
+
+Initial release. Working QGIS web plugin for listing datasets of an Opendatasoft catalog and fetching a selected one locally.
