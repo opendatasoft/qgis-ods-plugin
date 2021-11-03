@@ -1,15 +1,24 @@
 import os
+from urllib.parse import urlparse
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import QSettings
 from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import QSettings
 
 from . import utils
 
 
-class InputDialog(QtWidgets.QDialog):
+# noinspection PyPep8Naming
+class ODSDialog(QtWidgets.QDialog):
+    """
+    Main dialog window. Allows the user to:
+    - fetch the catalog of datasets for a given Opendatasoft domain
+    - select a specific dataset from the catalog
+    - add optional SQL-like filters
+    - download the dataset locally
+    """
     def __init__(self, iface):
-        super(InputDialog, self).__init__()
+        super(ODSDialog, self).__init__()
         ui_dir = os.path.dirname(os.path.abspath(__file__))
         ui_path = os.path.join(ui_dir, 'plugin_dialog.ui')
         uic.loadUi(ui_path, self)
@@ -38,11 +47,14 @@ class InputDialog(QtWidgets.QDialog):
         self.show()
 
     def updateListButtonPressed(self):
+        """
+        Fetch datasets list from the remote catalog server.
+        """
         self.datasetListComboBox.clear()
         self.datasetListComboBox.addItems(["--Choose a dataset identifier--"])
         try:
             dataset_id_list = utils.datasets_to_dataset_id_list(utils.import_dataset_list(
-                remove_http(self.domain()), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
+                self.domain(), self.apikey(), self.nonGeoCheckBox.isChecked(), self.text_search()))
             self.datasetListComboBox.addItems(dataset_id_list)
             self.datasetLabel.setVisible(True)
             self.datasetListComboBox.setVisible(True)
@@ -56,22 +68,23 @@ class InputDialog(QtWidgets.QDialog):
                                                               "contact Opendatasoft support for more information.")
 
     def updateSchemaTable(self):
-        if self.datasetListComboBox.currentText() and self.datasetListComboBox.currentText() != "--Choose a dataset identifier--":
+        """
+        Fetch selected dataset metadata and first records in order to fill the schema.
+        """
+        if self.datasetListComboBox.currentText() and \
+                self.datasetListComboBox.currentText() != "--Choose a dataset identifier--":
             self.schemaTableWidget.setColumnCount(0)
             try:
                 if self.apikey():
-                    metadata = utils.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
-                                                             self.apikey())
-                    first_record = utils.import_first_record(remove_http(self.domain()), self.dataset_id(),
-                                                             self.apikey())
+                    metadata = utils.import_dataset_metadata(self.domain(), self.dataset_id(), self.apikey())
+                    first_record = utils.import_first_record(self.domain(), self.dataset_id(), self.apikey())
                 else:
-                    metadata = utils.import_dataset_metadata(remove_http(self.domain()), self.dataset_id(),
-                                                             None)
-                    first_record = utils.import_first_record(remove_http(self.domain()), self.dataset_id(),
-                                                             None)
+                    metadata = utils.import_dataset_metadata(self.domain(), self.dataset_id(), None)
+                    first_record = utils.import_first_record(self.domain(), self.dataset_id(), None)
                 self.datasetNameLabel.setText("Dataset name: {}".format(metadata['results'][0]['default']['title']))
                 self.publisherLabel.setText("Publisher: {}".format(metadata['results'][0]['default']['publisher']))
-                self.recordsNumberLabel.setText("Number of records: {}".format(metadata['results'][0]['default']['records_count']))
+                self.recordsNumberLabel.setText("Number of records: {}".format(
+                    metadata['results'][0]['default']['records_count']))
                 for field in metadata['results'][0]['fields']:
                     column_position = self.schemaTableWidget.columnCount()
                     self.schemaTableWidget.insertColumn(column_position)
@@ -90,18 +103,11 @@ class InputDialog(QtWidgets.QDialog):
             self.metadataWidget.setVisible(True)
             self.saveWidget.setVisible(True)
             self.clearFilters()
-        elif self.datasetListComboBox.currentText() == "--Choose a dataset identifier--":
-            self.metadataWidget.setVisible(False)
-            self.showFilterCheckBox.setChecked(False)
-            self.saveWidget.setVisible(False)
-            for button in self.dialogButtonBox.buttons():
-                if button.text() == 'Import dataset':
-                    button.setEnabled(False)
-            QCoreApplication.processEvents()
-            self.resize(self.width(), 0)
         else:
-            self.datasetLabel.setVisible(False)
-            self.datasetListComboBox.setVisible(False)
+            if self.datasetListComboBox.currentText() != "--Choose a dataset identifier--":
+                self.datasetLabel.setVisible(False)
+                self.datasetListComboBox.setVisible(False)
+
             self.metadataWidget.setVisible(False)
             self.showFilterCheckBox.setChecked(False)
             self.saveWidget.setVisible(False)
@@ -135,7 +141,13 @@ class InputDialog(QtWidgets.QDialog):
 
     def domain(self):
         url = self.domainInput.text()
-        return remove_http(url)
+        if urlparse(url).scheme:
+            # https://data.opendatasoft.com format
+            ods_domain_url = urlparse(url).netloc
+        else:
+            # no scheme, urlparse cannot parse: let's do best effort
+            ods_domain_url = url.split('/')[0]
+        return ods_domain_url
 
     def apikey(self):
         if self.apikeyInput.text():
@@ -223,6 +235,10 @@ class InputDialog(QtWidgets.QDialog):
             self.pathInput.setText(ods_cache['path'])
 
     def importDataset(self):
+        """
+        Fetch the selected dataset from remote Opendatasoft catalog
+        and add it to the current project as a vector layer.
+        """
         settings = QSettings()
         if self.domain() == "" or self.dataset_id() == "":
             QtWidgets.QMessageBox.information(None, "ERROR:", "Domain and dataset fields must be filled to import a "
@@ -236,9 +252,9 @@ class InputDialog(QtWidgets.QDialog):
         if self.apikey():
             params['apikey'] = self.apikey()
         try:
-            imported_dataset = utils.import_dataset_to_qgis(self.domain(), self.dataset_id(), params)
+            fetched_dataset = utils.import_dataset_to_qgis(self.domain(), self.dataset_id(), params)
             self.setVisible(False)
-            utils.load_dataset_to_qgis(path, self.dataset_id(), imported_dataset)
+            utils.load_dataset_to_qgis(path, self.dataset_id(), fetched_dataset)
             all_datasets = [self.datasetListComboBox.itemText(i) for i in range(self.datasetListComboBox.count())]
             dataset_index = self.datasetListComboBox.currentIndex()
 
@@ -278,6 +294,7 @@ class InputDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.information(None, "ERROR:", "The apikey to access this dataset is wrong.")
 
 
+# noinspection PyPep8Naming
 class CancelImportDialog(QtWidgets.QDialog):
     def __init__(self):
         super(CancelImportDialog, self).__init__()
@@ -292,11 +309,3 @@ class CancelImportDialog(QtWidgets.QDialog):
 
     def cancelImport(self):
         self.isCanceled = True
-
-
-def remove_http(url):
-    if url.startswith("https://"):
-        return url[len("https://"):]
-    elif url.startswith("http://"):
-        return url[len("http://"):]
-    return url
