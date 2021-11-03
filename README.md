@@ -127,3 +127,9 @@ Will close the plugin.
 - *Import dataset*:
 Starts the import of the plugin. Needs at least a domain address and a dataset identifier
 
+
+## Changelog
+### 1.0.0
+*Th, 4 Nov 2021*
+
+Initial release. Working QGIS web plugin for listing datasets of an Opendatasoft catalog and fetching a selected one locally. 
