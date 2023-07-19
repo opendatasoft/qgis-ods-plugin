@@ -41,7 +41,7 @@ def import_dataset_list(domain_url, apikey, include_non_geo_dataset, text_search
             params['where'] = ["features='geo'"]
 
     try:
-        first_query = requests.get("https://{}/api/v2/catalog/query".format(domain_url),
+        first_query = requests.get("https://{}/api/explore/v2.1/catalog/datasets".format(domain_url),
                                    params=params,
                                    headers=headers)
         if first_query.status_code >= 500:
@@ -53,11 +53,12 @@ def import_dataset_list(domain_url, apikey, include_non_geo_dataset, text_search
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
         raise DomainError
     json_dataset = first_query.json()
+    print(json_dataset)
     total_count = json_dataset['total_count']
     params['offset'] = V2_API_CHUNK_SIZE
     query_size_limit = V2_QUERY_SIZE_LIMIT_DATA_OPENDATASOFT if domain_url == 'data.opendatasoft.com' else V2_QUERY_SIZE_LIMIT - V2_API_CHUNK_SIZE
     while params['offset'] <= total_count and params['offset'] < query_size_limit:
-        query = requests.get("https://{}/api/v2/catalog/query".format(domain_url),
+        query = requests.get("https://{}/api/explore/v2.1/catalog/datasets".format(domain_url),
                              params=params,
                              headers=headers)
         if query.status_code >= 500:
@@ -79,7 +80,7 @@ def import_dataset_metadata(domain_url, dataset_id, apikey):
     if apikey:
         headers['Authorization'] = 'apikey {}'.format(apikey)
     try:
-        query = requests.get("https://{}/api/v2/catalog/query".format(domain_url),
+        query = requests.get("https://{}/api/explore/v2.1/catalog/datasets".format(domain_url),
                              params=params,
                              headers=headers)
     except requests.exceptions.ConnectionError:
@@ -96,7 +97,7 @@ def import_first_record(domain_url, dataset_id, apikey):
     if apikey:
         headers['Authorization'] = 'apikey {}'.format(apikey)
     try:
-        query = requests.get("https://{}/api/v2/catalog/datasets/{}/query".format(domain_url, dataset_id),
+        query = requests.get("https://{}/api/explore/v2.1/catalog/datasets/{}/records".format(domain_url, dataset_id),
                              params=params,
                              headers=headers)
     except requests.exceptions.ConnectionError:
@@ -152,7 +153,7 @@ def import_dataset_to_qgis(domain, dataset_id, params):
         params_no_limit = dict(params)
         if 'limit' in params_no_limit.keys():
             params_no_limit.pop('limit')
-        test_query = requests.get("https://{}/api/v2/catalog/datasets/{}/query".format(domain, dataset_id),
+        test_query = requests.get("https://{}/api/explore/v2.1/catalog/datasets/{}/records".format(domain, dataset_id),
                                   params_no_limit)
 
     except (requests.exceptions.ConnectionError, requests.exceptions.InvalidURL):
@@ -173,7 +174,7 @@ def import_dataset_to_qgis(domain, dataset_id, params):
         if limit < -1:
             raise NumberOfLinesError
 
-    imported_dataset = requests.get("https://{}/api/v2/catalog/datasets/{}/exports/geojson".format(domain, dataset_id),
+    imported_dataset = requests.get("https://{}/api/explore/v2.1/catalog/datasets/{}/exports/geojson".format(domain, dataset_id),
                                     params, stream=True)
     return imported_dataset
 
