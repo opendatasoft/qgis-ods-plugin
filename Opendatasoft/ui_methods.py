@@ -91,10 +91,10 @@ class ODSDialog(QtWidgets.QDialog):
                 else:
                     metadata = utils.import_dataset_metadata(self.domain(), self.dataset_id(), None)
                     first_record = utils.import_first_record(self.domain(), self.dataset_id(), None)
-                self.datasetNameLabel.setText("Dataset name: {}".format(metadata['results'][0]['default']['title']))
-                self.publisherLabel.setText("Publisher: {}".format(metadata['results'][0]['default']['publisher']))
+                self.datasetNameLabel.setText("Dataset name: {}".format(metadata['results'][0]['metas']['default']['title']))
+                self.publisherLabel.setText("Publisher: {}".format(metadata['results'][0]['metas']['default']['publisher']))
                 self.recordsNumberLabel.setText("Number of records: {}".format(
-                    metadata['results'][0]['default']['records_count']))
+                    metadata['results'][0]['metas']['default']['records_count']))
                 for field in metadata['results'][0]['fields']:
                     column_position = self.schemaTableWidget.columnCount()
                     self.schemaTableWidget.insertColumn(column_position)

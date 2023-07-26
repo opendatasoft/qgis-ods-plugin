@@ -2,7 +2,7 @@
 name=Opendatasoft
 description=Download datasets from Opendatasoft-powered data catalogs
 about=This plugin allows one to directly import, in the GeoJSON format, any dataset from a private or public Opendatasoft portal. It uses the web Explore API v2 to fetch the data, thus you'll find this plugin in the web menu.
-version=1.0.0
+version=1.1.0
 qgisMinimumVersion=3.0
 author=Venceslas Roullier (Opendatasoft)
 email=support@opendatasoft.com
@@ -13,5 +13,7 @@ icon=icon.png
 
 changelog=1.0.0
     - Initial release: working plugin for listing datasets of an Opendatasoft catalog and fetching a specific one locally
+changelog=1.1.0
+    - Fixes data fetching following Opendatasoft's 2.1 API breaking changes
 
 tags=Opendatasoft,ods,open data,datasets
